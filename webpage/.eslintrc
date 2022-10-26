@@ -24,8 +24,7 @@
 		"@typescript-eslint/consistent-type-definitions": [
 			"error",
 			"type"
-		],
-		"no-console": "error"
+		]
 	},
 	"parser": "@typescript-eslint/parser"
 }

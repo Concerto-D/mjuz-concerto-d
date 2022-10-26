@@ -30,6 +30,7 @@ export class WishProvider<O> implements dynamic.ResourceProvider {
 		oldProps: unknown | WishProps<O>,
 		newProps: WishProps<O>
 	): Promise<dynamic.CheckResult & { inputs: WishProps<O> }> {
+		console.log("checking");
 		const props: WishProps<O> = {
 			targetId: newProps.targetId,
 			offerName: newProps.offerName,
@@ -53,6 +54,7 @@ export class WishProvider<O> implements dynamic.ResourceProvider {
 	}
 
 	async create(props: WishProps<O>): Promise<dynamic.CreateResult & { outs: WishProps<O> }> {
+		console.log("going here");
 		return {
 			id: `${props.targetId}:${props.offerName}`,
 			outs: props,

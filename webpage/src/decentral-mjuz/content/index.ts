@@ -9,32 +9,19 @@ import {
 } from '@mjuz/core';
 import { RemoteConnection, Wish } from '@mjuz/core/resources';
 import { Behavior } from '@funkia/hareactive';
-import * as aws from '@pulumi/aws';
+import * as docker from "@pulumi/docker";
+import * as aws from "@pulumi/aws"
 
-const program = async () => {
-	const bucketManager = new RemoteConnection('bucket', { port: 19952 });
-	const bucketWish = new Wish<aws.s3.Bucket>(bucketManager, 'bucket');
-
-	const content = `<html>
-		<head>
-			<title>Hello World! 👋🌍</title>
-			<meta charset="UTF-8">
-		</head>
-		<body>
-			<p>Hello World! 👋🌍</p>
-		</body>
-	</html>`;
-
-	// write our index.html into the site bucket
-	const index = new aws.s3.BucketObject('index', {
-		bucket: bucketWish.offer,
-		content: content,
-		contentType: 'text/html; charset=utf-8',
-		key: 'index.html',
-	});
-
+const program = async () => { 
+	const bucketManager = new RemoteConnection('docker_image', { port: 19952 });
+	const bucketWish = new Wish<String>(bucketManager, 'image');
+	// console.log("Mise à jour du bucketWish: " + bucketWish.offer.name);
+	// const localImage = new docker.RemoteImage('imageTestMjuz', { name: 'test_mjuz_container' });
+	// const container = new docker.Container('ubuntuContainer', {image: bucketWish.offer});
+	
 	return {
-		indexId: index.id,
+		test2: "test2",
+		test: bucketWish.offer,
 	};
 };
 
@@ -44,13 +31,16 @@ const initStack = getStack(
 		projectName: 'DecentralizedWebPageContent',
 		stackName: 'DecentralizedWebPageContent',
 	},
-	{ workDir: '.' },
-	{ 'aws:region': { value: 'us-east-1' } }
+	{ workDir: '.' }
 );
 
-runDeployment(
-	initStack,
-	operations(Behavior.of(program)),
-	(offerUpdates) => nextAction(offerUpdates, sigquit(), sigint()),
-	{ deploymentName: 'content', resourcesPort: 19953, deploymentPort: 19954 }
-);
+try {
+	runDeployment(
+		initStack,
+		operations(Behavior.of(program)),
+		(offerUpdates) => nextAction(offerUpdates, sigquit(), sigint()),
+		{deploymentName: 'container', resourcesPort: 19953, deploymentPort: 19954}
+	).catch(err => console.log(err));
+}catch (Exception) {
+	console.log("exception")
+}
