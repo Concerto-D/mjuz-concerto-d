@@ -78,6 +78,7 @@ export const runDeployment = <S>(
 	nextAction: (offerUpdates: Stream<void>) => Behavior<Behavior<Future<Action>>>,
 	options: Partial<RuntimeOptions> & { logger?: Logger; disableExit?: true } = {}
 ): Promise<S> => {
+	console.log("running deployment");
 	const opts = getOptions(options || {});
 	setLogLevel(opts.logLevel);
 	const logger = options.logger || newLogger('runtime');
@@ -116,11 +117,13 @@ export const runDeployment = <S>(
 				.flatMap(when)
 		).subscribe(() => initialized.resolve());
 		const finalStack = await toPromise(completed);
+		console.log("wait everything");
 		await Promise.all([
 			resourcesService.stop(),
 			deploymentService.stop(),
 			offersRuntime.stop(),
 		]);
+		console.log("end of run deployment");
 		return finalStack;
 	};
 

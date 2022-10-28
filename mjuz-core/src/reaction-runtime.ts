@@ -33,6 +33,7 @@ export const nextAction = <T, U, V>(
 	destroyTrigger: Future<V>
 ): Behavior<Behavior<Future<Action>>> =>
 	nextOccurrenceFrom(stateChanges).map((stateChange) => {
+		console.log("next action");
 		const deploy = stateChange.mapTo('deploy' as Action);
 		const terminate = terminateTrigger.mapTo('terminate' as Action);
 		const destroy = destroyTrigger.mapTo('destroy' as Action);

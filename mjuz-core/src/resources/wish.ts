@@ -25,12 +25,26 @@ const toRsWish = <O>(props: WishProps<O>): RsWish<O> => {
 		isDeployed: props.isSatisfied,
 	};
 };
+const showDictWithoutProvider = (dict: any) => {
+	const dictToShowOffer = {};
+	for (let k in dict) {
+		if (k !== "__provider") {
+			// @ts-ignore
+			dictToShowOffer[k] = dict[k];
+		}
+	}
+	console.log(dictToShowOffer);
+}
 export class WishProvider<O> implements dynamic.ResourceProvider {
 	async check(
 		oldProps: unknown | WishProps<O>,
 		newProps: WishProps<O>
 	): Promise<dynamic.CheckResult & { inputs: WishProps<O> }> {
-		console.log("checking");
+		console.log("------------------ check wish ---------:");
+		console.log("oldProps:")
+		showDictWithoutProvider(oldProps)
+		console.log("newProps:")
+		showDictWithoutProvider(newProps)
 		const props: WishProps<O> = {
 			targetId: newProps.targetId,
 			offerName: newProps.offerName,
@@ -38,11 +52,14 @@ export class WishProvider<O> implements dynamic.ResourceProvider {
 			offer: null,
 		};
 		if (isWishProps(oldProps) && oldProps.isSatisfied) {
+			console.log("Wish already satisfied from old props")
 			props.isSatisfied = true;
 			props.offer = oldProps.offer as O;
 		}
-
+		
 		const currentOffer: RemoteOffer<O> = await getWish(toRsWish(props));
+		console.log("currentOffer:")
+		showDictWithoutProvider(currentOffer)
 		if (currentOffer.offer !== undefined) {
 			props.isSatisfied = true;
 			props.offer = currentOffer.offer;
@@ -54,7 +71,9 @@ export class WishProvider<O> implements dynamic.ResourceProvider {
 	}
 
 	async create(props: WishProps<O>): Promise<dynamic.CreateResult & { outs: WishProps<O> }> {
-		console.log("going here");
+		console.log("------------ create wish --------------")
+		console.log("props:")
+		showDictWithoutProvider(props)
 		return {
 			id: `${props.targetId}:${props.offerName}`,
 			outs: props,
@@ -66,6 +85,11 @@ export class WishProvider<O> implements dynamic.ResourceProvider {
 		oldProps: WishProps<O>,
 		newProps: WishProps<O>
 	): Promise<dynamic.DiffResult> {
+		console.log("------------------ diff wish ---------:");
+		console.log("oldProps:");
+		showDictWithoutProvider(oldProps);
+		console.log("newProps:");
+		showDictWithoutProvider(newProps);
 		const replaces = ['targetId' as const, 'offerName' as const, 'isSatisfied' as const].filter(
 			(field) => oldProps[field] !== newProps[field]
 		);
@@ -73,7 +97,8 @@ export class WishProvider<O> implements dynamic.ResourceProvider {
 			oldProps.isSatisfied &&
 			newProps.isSatisfied &&
 			!isDeepStrictEqual(oldProps.offer, newProps.offer);
-
+			
+		console.log("offerChanged ? "+ offerChanged)
 		return {
 			changes: replaces.length > 0 || offerChanged,
 			replaces,
@@ -86,10 +111,19 @@ export class WishProvider<O> implements dynamic.ResourceProvider {
 		oldProps: WishProps<O>,
 		newProps: WishProps<O>
 	): Promise<dynamic.UpdateResult & { outs: WishProps<O> }> {
+		console.log("------------------ update wish ---------:");
+		console.log("oldProps:");
+		showDictWithoutProvider(oldProps);
+		console.log("newProps:");
+		showDictWithoutProvider(newProps);
 		return { outs: newProps };
 	}
 
 	async delete(id: ID, props: WishProps<O>): Promise<void> {
+		console.log("------------------ delete wish ---------:");
+		console.log("id:" + id);
+		console.log("props");
+		showDictWithoutProvider(props);
 		if (props.isSatisfied) await wishDeleted(toRsWish(props));
 	}
 }

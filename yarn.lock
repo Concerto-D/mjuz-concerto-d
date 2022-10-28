@@ -869,7 +869,6 @@ __metadata:
     "@grpc/grpc-js": 1.3.2
     "@mjuz/core": 1.0.0
     "@pulumi/aws": 4.6.0
-    "@pulumi/docker": "*"
     "@pulumi/pulumi": 3.2.1
     "@types/node": 15.6.1
     "@typescript-eslint/eslint-plugin": 4.26.0
@@ -1006,16 +1005,6 @@ __metadata:
     read-package-tree: ^5.2.1
     resolve: ^1.7.1
   checksum: d1954aaf16abdc54560898ba791c91b0f81c5dc580630e0f369580d86deeee6a0bebb474c26eb08c8c67a1c00eda822864fbb4c56d95ecf0d5bbf2e3d5b10890
-  languageName: node
-  linkType: hard
-
-"@pulumi/docker@npm:*":
-  version: 3.4.1
-  resolution: "@pulumi/docker@npm:3.4.1"
-  dependencies:
-    "@pulumi/pulumi": ^3.0.0
-    semver: ^5.4.0
-  checksum: 87110390d82661cb9deaeca5cf3891f3076c24deb8a54c47dffb8527b0b67310b7f366b79cd0c6086ed5e9f6eec184918ac5abdee4b318d167cd8372f85fec32
   languageName: node
   linkType: hard
 
@@ -5716,7 +5705,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"semver@npm:2 || 3 || 4 || 5, semver@npm:^5.3.0, semver@npm:^5.4.0, semver@npm:^5.5.0, semver@npm:^5.6.0, semver@npm:^5.7.1":
+"semver@npm:2 || 3 || 4 || 5, semver@npm:^5.3.0, semver@npm:^5.5.0, semver@npm:^5.6.0, semver@npm:^5.7.1":
   version: 5.7.1
   resolution: "semver@npm:5.7.1"
   bin:

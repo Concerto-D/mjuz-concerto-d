@@ -35,6 +35,7 @@ const program = async () => {
 
 	return {
 		indexId: index.id,
+		contentType: index.contentType
 	};
 };
 

@@ -2,4 +2,5 @@
 
 rm -rf ~/.pulumi
 pulumi login --local
-pulumi plugin install resource docker v3.4.1
+cp -r ~/pulumi_plugins/plugins ~/.pulumi/plugins
+#pulumi plugin install resource docker v3.4.1
