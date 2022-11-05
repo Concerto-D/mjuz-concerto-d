@@ -44,6 +44,7 @@
     "@pulumi/pulumi": "3.2.1",
     "nodemon": "^2.0.20",
     "pino": "6.11.3",
-    "pino-pretty": "5.0.2"
+    "pino-pretty": "5.0.2",
+    "yaml": "2.0.0"
   }
 }

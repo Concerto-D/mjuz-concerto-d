@@ -10,6 +10,9 @@ import {
 import { Offer, RemoteConnection } from '@mjuz/core/resources';
 import { Behavior } from '@funkia/hareactive';
 import {DepInstallResource} from "../depInstall";
+import * as fs from "fs";
+import * as YAML from "yaml";
+
 
 const config_file_path = process.argv[4];
 const timestamp_log_file = process.argv[5];
@@ -29,8 +32,14 @@ console.log(
 )
 console.log("------------")
 
+const inventory = YAML.parse(fs.readFileSync("/home/anomond/concerto-d-projects/mjuz-concerto-d/inventory.yaml", "utf-8"))
+console.log("inventory:")
+console.log(inventory)
+console.log("----------")
+
 const program = async () => {
-	const contentManager = new RemoteConnection(`dep${depNum}`, { port: 19952 });
+	const serverHost = inventory["server"].split(":")[0]
+	const contentManager = new RemoteConnection(`dep${depNum}`, { port: 19952, host: serverHost});
 	const depInstallRessource = new DepInstallResource(`dep${depNum}Install`, {name: `dep${depNum}Install`, time: 1.1});
 	new Offer(contentManager, `dep${depNum}Install`, depInstallRessource)
 	

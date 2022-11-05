@@ -881,6 +881,7 @@ __metadata:
     pino-pretty: 5.0.2
     prettier: 2.3.0
     typescript: 4.2.4
+    yaml: 2.0.0
   languageName: unknown
   linkType: soft
 
@@ -6845,6 +6846,13 @@ typescript@~3.7.3:
   version: 4.0.0
   resolution: "yallist@npm:4.0.0"
   checksum: a2960ef879af6ee67a76cae29bac9d8bffeb6e9e366c217dbd21464e7fce071933705544724f47e90ba5209cf9c83c17d5582dd04415d86747a826b2a231efb8
+  languageName: node
+  linkType: hard
+
+"yaml@npm:2.0.0":
+  version: 2.0.0
+  resolution: "yaml@npm:2.0.0"
+  checksum: d8cbf9c96f9bffef1e01d8ea0029edcfafa190e86fb0379ab32ddea2283d186933f66aaf971cf83adf393dcb66324140f212fbb77177d3076d0f72bd4ec1f49b
   languageName: node
   linkType: hard
 
