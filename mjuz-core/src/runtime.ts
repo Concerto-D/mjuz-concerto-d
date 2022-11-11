@@ -32,6 +32,23 @@ type RuntimeOptions = {
 	logLevel: Level;
 };
 
+enum TimestampType {
+	UPTIME = 'uptime',
+	DEPLOY = 'deploy',
+	UPDATE = 'update',
+}
+
+enum TimestampPeriod {
+	START = 'start',
+	END = 'end',
+}
+
+export const globalVariables = {
+	execution_expe_dir: '',
+};
+
+let finalS: any;
+
 const getOptions = (defaults: Partial<RuntimeOptions>): RuntimeOptions =>
 	yargs.options({
 		deploymentName: {
@@ -72,13 +89,56 @@ const getOptions = (defaults: Partial<RuntimeOptions>): RuntimeOptions =>
 		},
 	}).argv as RuntimeOptions;
 
+let exitCode = 0;
+type timestampDictType = {
+	[timestampType: string]: {
+		[timestampPeriod: string]: number;
+	};
+};
+
+const allTimestampsDict: timestampDictType = {};
+
+export const goToSleep = (newExitCode: number): void => {
+	exitCode = newExitCode;
+	process.kill(process.pid, 3);
+};
+
+export const registerTimeValue = (
+	timestampType: TimestampType,
+	timestampPeriod: TimestampPeriod
+): void => {
+	if (timestampPeriod === TimestampPeriod.START) {
+		if (timestampType in allTimestampsDict) {
+			throw new Error(
+				`Register time value start error: ${timestampType} for ${TimestampPeriod.START} already registered`
+			);
+		}
+		allTimestampsDict[timestampType] = {};
+		allTimestampsDict[timestampType][TimestampPeriod.START] = new Date().getTime();
+	} else {
+		if (!(timestampType in allTimestampsDict)) {
+			throw new Error(`Register time value end error: ${timestampType} never registered`);
+		}
+		if (TimestampPeriod.END in allTimestampsDict[timestampType]) {
+			throw new Error(
+				`Register time value start error: ${timestampType} for ${TimestampPeriod.END} already registered`
+			);
+		}
+		allTimestampsDict[timestampType][TimestampPeriod.END] = new Date().getTime();
+	}
+};
+
+export const registerTimestampsinFile: () => {
+	
+}
+
 export const runDeployment = <S>(
 	initOperation: IO<S>,
 	operations: (action: Action) => (state: S) => IO<S>,
 	nextAction: (offerUpdates: Stream<void>) => Behavior<Behavior<Future<Action>>>,
 	options: Partial<RuntimeOptions> & { logger?: Logger; disableExit?: true } = {}
 ): Promise<S> => {
-	console.log("running deployment");
+	console.log('running deployment');
 	const opts = getOptions(options || {});
 	setLogLevel(opts.logLevel);
 	const logger = options.logger || newLogger('runtime');
@@ -117,13 +177,16 @@ export const runDeployment = <S>(
 				.flatMap(when)
 		).subscribe(() => initialized.resolve());
 		const finalStack = await toPromise(completed);
-		console.log("wait everything");
+		console.log('wait everything');
 		await Promise.all([
 			resourcesService.stop(),
 			deploymentService.stop(),
 			offersRuntime.stop(),
 		]);
-		console.log("end of run deployment");
+		console.log('end of run deployment');
+		// console.log('final stack:');
+		// console.log(finalStack);
+		finalS = finalStack;
 		return finalStack;
 	};
 
@@ -134,6 +197,8 @@ export const runDeployment = <S>(
 		})
 		.finally(() => {
 			logger.info('Deployment terminated');
-			if (!options.disableExit) process.exit(0);
+			console.log('FINAL:');
+			console.log(finalS);
+			if (!options.disableExit) process.exit(exitCode);
 		});
 };

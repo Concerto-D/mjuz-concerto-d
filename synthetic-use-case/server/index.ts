@@ -3,6 +3,7 @@ import {
 	getStack,
 	nextAction,
 	operations,
+	goToSleep,
 	runDeployment,
 	sigint,
 	sigquit,
@@ -20,7 +21,7 @@ const g5k_execution_params_dir = process.argv[6];
 const reconfiguration_name = process.argv[7];
 const nb_concerto_nodes = Number.parseInt(process.argv[8]);
 
-console.log("script parameters:")
+console.log("script parameters:");
 console.log(
 	config_file_path,
 	timestamp_log_file,
@@ -28,12 +29,14 @@ console.log(
 	reconfiguration_name,
 	nb_concerto_nodes
 )
-console.log("------------")
+console.log("------------");
 
-const inventory = YAML.parse(fs.readFileSync("/home/anomond/concerto-d-projects/mjuz-concerto-d/inventory.yaml", "utf-8"))
+const inventory = YAML.parse(fs.readFileSync("../../inventory.yaml", "utf-8"))
 console.log("inventory:")
 console.log(inventory)
 console.log("----------")
+
+setTimeout(() => goToSleep(0), 30000)
 
 
 const program = async () => {
@@ -58,10 +61,16 @@ const program = async () => {
 	const serverInstallRessource = new ServerInstallResource(
 		"serverInstall",
 		{
-			name: "serverInstall", 
+			name: "serverInstall",
 			time: 5.3,
 			depsOffers: depsOffers
 		});
+	
+	serverInstallRessource.id.apply(
+		resultId => {
+			goToSleep(50);
+		}
+	)
 	
 	return {
 		serverInstallId: serverInstallRessource.id

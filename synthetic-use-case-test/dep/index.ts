@@ -1,7 +1,6 @@
 import {
 	emptyProgram,
 	getStack,
-	globalVariables,
 	nextAction,
 	operations,
 	runDeployment,
@@ -20,7 +19,7 @@ const timestamp_log_file = process.argv[5];
 const g5k_execution_params_dir = process.argv[6];
 const reconfiguration_name = process.argv[7];
 const nb_concerto_nodes = process.argv[8];
-const depNum = process.argv[9]
+let depNum = process.argv[9]
 
 console.log("script parameters:")
 console.log(
@@ -33,8 +32,6 @@ console.log(
 )
 console.log("------------")
 
-g5k_execution_params_dir.execution_expe_dir = g5k_execution_params_dir; 
-
 const inventory = YAML.parse(fs.readFileSync("../../inventory.yaml", "utf-8"))
 console.log("inventory:")
 console.log(inventory)
@@ -43,10 +40,32 @@ console.log("----------")
 setTimeout(() => process.kill(process.pid, 3), 30000)
 
 const program = async () => {
+	depNum = "0";
 	const serverHost = inventory["server"].split(":")[0]
-	const contentManager = new RemoteConnection(`dep${depNum}`, { port: 19952, host: serverHost});
-	const depInstallRessource = new DepInstallResource(`dep${depNum}Install`, {name: `dep${depNum}Install`, time: 1.1});
-	new Offer(contentManager, `dep${depNum}Install`, depInstallRessource)
+	const contentManager = new RemoteConnection(`dep0`, { port: 19952, host: serverHost});
+	const depInstallRessource = new DepInstallResource(
+		`dep${depNum}Install`,
+		{
+			name: `dep${depNum}Install`,
+			time: 0
+		});
+	const off1 = new Offer(contentManager, `dep${depNum}Install`, depInstallRessource)
+	depNum = "1"
+	const depInstallRessource2 = new DepInstallResource(
+		`dep${depNum}Install`,
+		{
+			name: `dep${depNum}Install`,
+			time: 0
+		});
+	const off2 = new Offer(contentManager, `dep${depNum}Install`, depInstallRessource)
+
+	// .apply(
+	// 	result => {
+	// 		console.log("BENEF IDDD:")
+	// 		console.log({result: result})
+	// 		process.kill(process.pid, 3)
+	// 	}
+	// )
 	
 	return {
 		depInstallId: depInstallRessource.id

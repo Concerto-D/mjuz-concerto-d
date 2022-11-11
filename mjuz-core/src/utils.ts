@@ -3,13 +3,19 @@ import Timeout = NodeJS.Timeout;
 
 export const sigint: () => Future<void> = () => {
 	const f = sinkFuture<void>();
-	process.on('SIGINT', () => f.resolve());
+	process.on('SIGINT', () => {
+		console.log('------------ QUITTING --------------');
+		return f.resolve();
+	});
 	return f;
 };
 
 export const sigquit: () => Future<void> = () => {
 	const f = sinkFuture<void>();
-	process.on('SIGQUIT', () => f.resolve());
+	process.on('SIGQUIT', () => {
+		console.log('------------ TERMINATING --------------');
+		return f.resolve();
+	});
 	return f;
 };
 
