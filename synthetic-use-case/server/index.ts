@@ -2,24 +2,29 @@ import {
 	emptyProgram,
 	getStack,
 	nextAction,
-	operations,
-	goToSleep,
+	operations, registerTimeValue,
 	runDeployment,
 	sigint,
-	sigquit,
+	sigquit, TimestampPeriod, TimestampType
 } from '@mjuz/core';
 import { Wish, RemoteConnection } from '@mjuz/core/resources';
 import { Behavior } from '@funkia/hareactive';
 import {ServerInstallResource} from "../serverInstall";
 import {DepInstallResource} from "../depInstall";
-import * as fs from "fs";
-import * as YAML from "yaml";
+import {
+	goToSleep, initializeReconf
+} from '../metricAnalysis'
 
-const config_file_path = process.argv[4];
-const timestamp_log_file = process.argv[5];
-const g5k_execution_params_dir = process.argv[6];
-const reconfiguration_name = process.argv[7];
-const nb_concerto_nodes = Number.parseInt(process.argv[8]);
+const [
+	config_file_path,
+	timestamp_log_file,
+	g5k_execution_params_dir,
+	reconfiguration_name,
+	nb_concerto_nodes,
+	depNum,
+	inventory,
+	serverDeployTime
+] = initializeReconf("server")
 
 console.log("script parameters:");
 console.log(
@@ -31,19 +36,15 @@ console.log(
 )
 console.log("------------");
 
-const inventory = YAML.parse(fs.readFileSync("../../inventory.yaml", "utf-8"))
-console.log("inventory:")
-console.log(inventory)
-console.log("----------")
-
-setTimeout(() => goToSleep(0), 30000)
-
+let deployTimestampRegistered = false;
 
 const program = async () => {
-	// const contentManager0 = new RemoteConnection('dep0', { port: 19954 });
-	// const contentManager1 = new RemoteConnection('dep1', { port: 19956 });
-	// const dep0InstallWish = new Wish<DepInstallResource>(contentManager0, "dep0Install");
-	// const dep1InstallWish = new Wish<DepInstallResource>(contentManager1, "dep1Install")
+	console.log("------ PROGRAM LAUNCHED -----------");
+	if (!deployTimestampRegistered) {
+		registerTimeValue(TimestampType.DEPLOY, TimestampPeriod.START);
+		deployTimestampRegistered = true;
+	}
+	
 	const remoteConns = [];
 	const wishes = [];
 	const depsOffers = [];
@@ -58,20 +59,26 @@ const program = async () => {
 		depsOffers.push(depWish.offer);
 	}
 	
+	console.log("Creating server");
+	
 	const serverInstallRessource = new ServerInstallResource(
 		"serverInstall",
 		{
 			name: "serverInstall",
-			time: 5.3,
+			time: serverDeployTime,
 			depsOffers: depsOffers
 		});
 	
 	serverInstallRessource.id.apply(
 		resultId => {
-			goToSleep(50);
+			console.log("Got result Id: " + resultId);
+			if (resultId !== undefined) {
+				goToSleep(50);
+			}
 		}
 	)
 	
+	console.log("Getting ID")
 	return {
 		serverInstallId: serverInstallRessource.id
 	}

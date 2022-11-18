@@ -1,23 +1,5 @@
 import { dynamic, Output } from '@pulumi/pulumi';
-import {ProvideResource} from "../webpage/provide-dep";
 
-// export type ProvidePropsInput = {
-// 	field1: Input<string>;
-// 	field2: Input<number>;
-// 	field3: Input<boolean>;
-// };
-//
-// export type ProvidePropsProvider = {
-// 	field1: string;
-// 	field2: number;
-// 	field3: boolean;
-// };
-//
-// type ProvidePropsProviderOutput = {
-// 	field1: string;
-// 	field2: number;
-// 	field3: boolean;
-// };
 
 export class DepInstallProvider implements dynamic.ResourceProvider {
 	async check(olds: any, news: any) {
@@ -28,6 +10,7 @@ export class DepInstallProvider implements dynamic.ResourceProvider {
 
 	async create(inputs: any) {
 		const sleep = (s: number) => new Promise(r => setTimeout(r, s * 1000));
+		console.log("----------- WAITING " + inputs.time + "S -------")
 		await sleep(inputs.time);
 		return {
 			id: inputs.name,

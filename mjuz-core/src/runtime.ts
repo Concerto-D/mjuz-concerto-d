@@ -21,6 +21,75 @@ import {
 } from '.';
 import * as yargs from 'yargs';
 import { Level, Logger } from 'pino';
+import * as YAML from 'yaml';
+import fs from 'fs';
+
+export enum TimestampType {
+	UPTIME = 'event_uptime',
+	DEPLOY = 'event_deploy',
+	UPDATE = 'event_update',
+}
+
+export enum TimestampPeriod {
+	START = 'start',
+	END = 'end',
+}
+
+export const globalVariables = {
+	execution_expe_dir: '',
+	logDirTimestamp: '',
+	assemblyName: '',
+};
+
+type timestampDictType = {
+	[timestampType: string]: {
+		[timestampPeriod: string]: number;
+	};
+};
+
+const allTimestampsDict: timestampDictType = {};
+
+export const registerTimeValue = (
+	timestampType: TimestampType,
+	timestampPeriod: TimestampPeriod
+): void => {
+	if (timestampPeriod === TimestampPeriod.START) {
+		if (timestampType in allTimestampsDict) {
+			throw new Error(
+				`Register time value start error: ${timestampType} for ${TimestampPeriod.START} already registered`
+			);
+		}
+		allTimestampsDict[timestampType] = {};
+		allTimestampsDict[timestampType][TimestampPeriod.START] = new Date().getTime() / 1000;
+	} else {
+		if (!(timestampType in allTimestampsDict)) {
+			throw new Error(`Register time value end error: ${timestampType} never registered`);
+		}
+		if (TimestampPeriod.END in allTimestampsDict[timestampType]) {
+			throw new Error(
+				`Register time value start error: ${timestampType} for ${TimestampPeriod.END} already registered`
+			);
+		}
+		allTimestampsDict[timestampType][TimestampPeriod.END] = new Date().getTime() / 1000;
+	}
+};
+
+export const registerEndAllTimeValues = (): void => {
+	console.log('GOT HERE');
+	for (const timestampName in allTimestampsDict) {
+		if (!(TimestampPeriod.END in allTimestampsDict[timestampName])) {
+			allTimestampsDict[timestampName][TimestampPeriod.END] = new Date().getTime() / 1000;
+		}
+	}
+};
+
+export const registerTimeValuesInFile = (): void => {
+	console.log('Writing file here: ' + globalVariables.logDirTimestamp);
+	const fileName = `${globalVariables.execution_expe_dir}/${globalVariables.assemblyName}_${globalVariables.logDirTimestamp}.yaml`;
+	const yamlStr = YAML.stringify(allTimestampsDict);
+	fs.writeFileSync(fileName, yamlStr);
+	console.log('Done writing file');
+};
 
 type RuntimeOptions = {
 	deploymentName: string;
@@ -31,23 +100,6 @@ type RuntimeOptions = {
 	resourcesPort: number;
 	logLevel: Level;
 };
-
-enum TimestampType {
-	UPTIME = 'uptime',
-	DEPLOY = 'deploy',
-	UPDATE = 'update',
-}
-
-enum TimestampPeriod {
-	START = 'start',
-	END = 'end',
-}
-
-export const globalVariables = {
-	execution_expe_dir: '',
-};
-
-let finalS: any;
 
 const getOptions = (defaults: Partial<RuntimeOptions>): RuntimeOptions =>
 	yargs.options({
@@ -90,47 +142,9 @@ const getOptions = (defaults: Partial<RuntimeOptions>): RuntimeOptions =>
 	}).argv as RuntimeOptions;
 
 let exitCode = 0;
-type timestampDictType = {
-	[timestampType: string]: {
-		[timestampPeriod: string]: number;
-	};
-};
-
-const allTimestampsDict: timestampDictType = {};
-
-export const goToSleep = (newExitCode: number): void => {
+export const setExitCode = (newExitCode: number): void => {
 	exitCode = newExitCode;
-	process.kill(process.pid, 3);
 };
-
-export const registerTimeValue = (
-	timestampType: TimestampType,
-	timestampPeriod: TimestampPeriod
-): void => {
-	if (timestampPeriod === TimestampPeriod.START) {
-		if (timestampType in allTimestampsDict) {
-			throw new Error(
-				`Register time value start error: ${timestampType} for ${TimestampPeriod.START} already registered`
-			);
-		}
-		allTimestampsDict[timestampType] = {};
-		allTimestampsDict[timestampType][TimestampPeriod.START] = new Date().getTime();
-	} else {
-		if (!(timestampType in allTimestampsDict)) {
-			throw new Error(`Register time value end error: ${timestampType} never registered`);
-		}
-		if (TimestampPeriod.END in allTimestampsDict[timestampType]) {
-			throw new Error(
-				`Register time value start error: ${timestampType} for ${TimestampPeriod.END} already registered`
-			);
-		}
-		allTimestampsDict[timestampType][TimestampPeriod.END] = new Date().getTime();
-	}
-};
-
-export const registerTimestampsinFile: () => {
-	
-}
 
 export const runDeployment = <S>(
 	initOperation: IO<S>,
@@ -184,9 +198,6 @@ export const runDeployment = <S>(
 			offersRuntime.stop(),
 		]);
 		console.log('end of run deployment');
-		// console.log('final stack:');
-		// console.log(finalStack);
-		finalS = finalStack;
 		return finalStack;
 	};
 
@@ -197,8 +208,8 @@ export const runDeployment = <S>(
 		})
 		.finally(() => {
 			logger.info('Deployment terminated');
-			console.log('FINAL:');
-			console.log(finalS);
+			registerEndAllTimeValues();
+			registerTimeValuesInFile();
 			if (!options.disableExit) process.exit(exitCode);
 		});
 };

@@ -3,6 +3,7 @@ import { isDeepStrictEqual } from 'util';
 import { WrappedInputs, WrappedOutputs } from '../type-utils';
 import { RemoteConnection } from './remote-connection';
 import { getWish, RemoteOffer, Wish as RsWish, wishDeleted } from '../resources-service';
+import { showDictWithoutProvider } from '../utils';
 
 export type WishProps<O> = {
 	targetId: string;
@@ -25,16 +26,7 @@ const toRsWish = <O>(props: WishProps<O>): RsWish<O> => {
 		isDeployed: props.isSatisfied,
 	};
 };
-const showDictWithoutProvider = (dict: any) => {
-	const dictToShowOffer = {};
-	for (let k in dict) {
-		if (k !== "__provider") {
-			// @ts-ignore
-			dictToShowOffer[k] = dict[k];
-		}
-	}
-	console.log(dictToShowOffer);
-}
+
 export class WishProvider<O> implements dynamic.ResourceProvider {
 	async check(
 		oldProps: unknown | WishProps<O>,

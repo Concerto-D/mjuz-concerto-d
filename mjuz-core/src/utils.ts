@@ -33,3 +33,13 @@ export const intervalStream = (intervalMs: number): Stream<void> =>
 		const intervalId = setInterval(() => push(undefined), intervalMs);
 		return () => clearInterval(intervalId);
 	});
+
+export const showDictWithoutProvider = (dict: any) => {
+	const dictToShowOffer: any = {};
+	for (const k in dict) {
+		if (k !== '__provider') {
+			dictToShowOffer[k] = dict[k];
+		}
+	}
+	console.log(dictToShowOffer);
+};
