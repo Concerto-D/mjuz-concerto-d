@@ -9,6 +9,7 @@ export class DepInstallProvider implements dynamic.ResourceProvider {
 	}
 
 	async create(inputs: any) {
+		console.log("----------------- CALLING DIFF ON DEP INSTALL ---------------")
 		const sleep = (s: number) => new Promise(r => setTimeout(r, s * 1000));
 		console.log("----------- WAITING " + inputs.time + "S -------")
 		await sleep(inputs.time);

@@ -53,7 +53,7 @@ const program = async () => {
 		const depName = `dep${depNum}`;
 		const depHost = inventory[depName].split(":")[0];
 		let remoteConn = new RemoteConnection(depName, { port: 19954 + 2*depNum, host: depHost});
-		let depWish = new Wish<DepInstallResource>(remoteConn, `dep${depNum}Install`);
+		let depWish = new Wish<DepInstallResource>(remoteConn, `dep${depNum}`);
 		remoteConns.push(remoteConn);
 		wishes.push(depWish);
 		depsOffers.push(depWish.offer);
@@ -62,9 +62,9 @@ const program = async () => {
 	console.log("Creating server");
 	
 	const serverInstallRessource = new ServerInstallResource(
-		"serverInstall",
+		"server",
 		{
-			name: "serverInstall",
+			name: `server${reconfiguration_name}`,
 			time: serverDeployTime,
 			depsOffers: depsOffers
 		});

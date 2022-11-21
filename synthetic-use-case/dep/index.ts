@@ -39,10 +39,10 @@ const program = async () => {
 	const serverHost = inventory["server"].split(":")[0]
 	const contentManager = new RemoteConnection(`dep${depNum}`, { port: 19952, host: serverHost});
 	const depInstallRessource = new DepInstallResource(
-		`dep${depNum}Install`, 
-		{name: `dep${depNum}Install`, time: depDeployTime}
+		`dep${depNum}`, 
+		{name: `dep${depNum}${reconfiguration_name}`, time: depDeployTime}
 	);
-	new Offer(contentManager, `dep${depNum}Install`, depInstallRessource)
+	new Offer(contentManager, `dep${depNum}`, depInstallRessource)
 	
 	return {
 		depInstallId: depInstallRessource.id
