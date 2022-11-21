@@ -73,7 +73,12 @@ export const initializeReconf = (assembly_type: string) => {
 
 export const initTimeLogDir = (assemblyName: string, g5k_execution_params_dir: string, logDirTimestamp: string | null): void => {
 	if(!fs.existsSync(g5k_execution_params_dir)) {
-		fs.mkdirSync(g5k_execution_params_dir);
+		try {
+			fs.mkdirSync(g5k_execution_params_dir);
+		}
+		catch {
+			console.log(`------ RACE CONDITION HANDLED BY EXCEPTION: FOLDER ${g5k_execution_params_dir} WAS ALREADY CREATED`);
+		}
 	}
 	globalVariables.assemblyName = assemblyName;
 	if (logDirTimestamp !== null) {
