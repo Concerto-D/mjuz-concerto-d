@@ -1,4 +1,4 @@
 #/usr/bin/bash
 
-rm -rf ~/.pulumi
-/opt/pulumi/bin/pulumi login --local
+rm -rf /tmp/.pulumi
+/opt/pulumi/bin/pulumi login file:///tmp
