@@ -41,7 +41,14 @@ let deployTimestampRegistered = false;
 const program = async () => {
 	console.log("------ PROGRAM LAUNCHED -----------");
 	if (!deployTimestampRegistered) {
-		registerTimeValue(TimestampType.DEPLOY, TimestampPeriod.START);
+		let timestampType;
+		if(reconfiguration_name === "deploy") {
+			timestampType = TimestampType.DEPLOY;
+		}
+		else {
+			timestampType = TimestampType.UPDATE;
+		}
+		registerTimeValue(timestampType, TimestampPeriod.START);
 		deployTimestampRegistered = true;
 	}
 	
@@ -53,7 +60,11 @@ const program = async () => {
 		const depName = `dep${depNum}`;
 		const depHost = inventory[depName].split(":")[0];
 		let remoteConn = new RemoteConnection(depName, { port: 19954 + 2*depNum, host: depHost});
-		let depWish = new Wish<DepInstallResource>(remoteConn, `dep${depNum}`);
+		
+		// For update: delete and replace wish, else the server will be created before the new Offer is
+		// resolve for the wish
+		// TODO: check if this is automatically handled by Mjuz, it should not because the wish is replaced the exact moment it received the withdrawal of the offer
+		let depWish = new Wish<DepInstallResource>(remoteConn, `dep${depNum}${reconfiguration_name}`);
 		remoteConns.push(remoteConn);
 		wishes.push(depWish);
 		depsOffers.push(depWish.offer);
@@ -64,7 +75,7 @@ const program = async () => {
 	const serverInstallRessource = new ServerInstallResource(
 		"server",
 		{
-			name: `server${reconfiguration_name}`,
+			reconfState: reconfiguration_name,
 			time: serverDeployTime,
 			depsOffers: depsOffers
 		});

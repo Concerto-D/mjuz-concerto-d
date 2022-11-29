@@ -43,6 +43,10 @@ export const initializeReconf = (assembly_type: string) => {
 	const inventory = YAML.parse(fs.readFileSync("../../inventory.yaml", "utf-8"))
 	
 	// Set duration timeout (always 30 seconds)
+	// let t = 30000;
+	// if (reconfiguration_name === "update") {
+	// 	t = 300000;
+	// }
 	setTimeout(() => goToSleep(0), 30000);
 	
 	// Compute server deployment time
@@ -52,12 +56,12 @@ export const initializeReconf = (assembly_type: string) => {
 	}
 	let deployTime;
 	if(assemblyName === "server") {
-		deployTime = computeServerDeployTime(config_file_path);
+		deployTime = computeServerDeployTime(config_file_path, reconfiguration_name);
 	}
 	else {
-		deployTime = computeDepDeployTime(config_file_path, assemblyName);
+		deployTime = computeDepDeployTime(config_file_path, assemblyName, reconfiguration_name);
 	}
-	// const serverDeployTime = 0.4;
+	// const deployTime = 20;
 	
 	return [
 		config_file_path,
@@ -103,17 +107,29 @@ export const goToSleep = (newExitCode: number): void => {
 };
 
 
-export const computeServerDeployTime = (transitions_times_file: string): number => {
+export const computeServerDeployTime = (transitions_times_file: string, reconfiguration_name: string): number => {
 	const transitions_times = JSON.parse(fs.readFileSync(transitions_times_file, "utf-8"));
 	const transitions_times_assembly = transitions_times["transitions_times"]["server"]
-	return transitions_times_assembly["t_sa"]
-		 + transitions_times_assembly["t_sc"].reduce((x: number, y: number) => x + y, 0)  // Sum of the list
-		 + transitions_times_assembly["t_sr"];
+	if(reconfiguration_name === "deploy") {
+		return transitions_times_assembly["t_sa"]
+		 	 + transitions_times_assembly["t_sc"].reduce((x: number, y: number) => x + y, 0)  // Sum of the list
+		     + transitions_times_assembly["t_sr"];
+	}
+	else {
+		return transitions_times_assembly["t_ss"].reduce((x: number, y: number) => x + y, 0)
+		     + transitions_times_assembly["t_sp"].reduce((x: number, y: number) => x + y, 0)
+			 + transitions_times_assembly["t_sr"]
+	}
 };
 
 
-export const computeDepDeployTime = (transitions_times_file: string, depName: string): number => {
+export const computeDepDeployTime = (transitions_times_file: string, depName: string, reconfiguration_name: string): number => {
 	const transitions_times = JSON.parse(fs.readFileSync(transitions_times_file, "utf-8"));
 	const transitions_times_assembly = transitions_times["transitions_times"][depName]
-	return transitions_times_assembly["t_di"] + transitions_times_assembly["t_dr"];
+	if(reconfiguration_name === "deploy") {
+		return transitions_times_assembly["t_di"] + transitions_times_assembly["t_dr"];
+	}
+	else {
+		return transitions_times_assembly["t_du"] + transitions_times_assembly["t_dr"];
+	}
 };

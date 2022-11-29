@@ -38,11 +38,16 @@ console.log("------------")
 const program = async () => {
 	const serverHost = inventory["server"].split(":")[0]
 	const contentManager = new RemoteConnection(`dep${depNum}`, { port: 19952, host: serverHost});
+	
+	// For update: delete and replace resource
 	const depInstallRessource = new DepInstallResource(
-		`dep${depNum}`, 
-		{name: `dep${depNum}${reconfiguration_name}`, time: depDeployTime}
+		`dep${depNum}${reconfiguration_name}`, 
+		{reconfState: reconfiguration_name, time: depDeployTime}
 	);
-	new Offer(contentManager, `dep${depNum}`, depInstallRessource)
+	
+	// For the update of the offer, need to also delete and replace the offer because the dep resource changed
+	// TODO: check if this is automatically handled by Mjuz
+	new Offer(contentManager, `dep${depNum}${reconfiguration_name}`, depInstallRessource)
 	
 	return {
 		depInstallId: depInstallRessource.id
