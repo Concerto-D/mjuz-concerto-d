@@ -23,7 +23,6 @@ interface UsePropsProviderOutput {
 export class UseProvider implements dynamic.ResourceProvider {
 	async check(olds: UsePropsProviderInput, news: UsePropsProviderInput): Promise<dynamic.CheckResult> {
 		news.done = false;
-		console.log("------------ checking use ------------")
 		return {
 			inputs: news
 		};
@@ -31,7 +30,6 @@ export class UseProvider implements dynamic.ResourceProvider {
 	
     async create(inputs: UsePropsProviderInput): Promise<dynamic.CreateResult> {
 		// inputs.done = false;
-		console.log("--------------- creating use ---------------")
         return {
 			id: inputs.nameDep,
 			outs: {

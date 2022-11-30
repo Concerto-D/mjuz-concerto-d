@@ -13,9 +13,7 @@ export class ServerInstallProvider implements dynamic.ResourceProvider {
 	
 	async create(inputs: any) {
 		const sleep = (s: number) => new Promise(r => setTimeout(r, s*1000));
-		console.log("----------- WAITING " + inputs.time + "S -------")
 		await sleep(inputs.time);
-		console.log("--- DONE ----")
 		return {
 			id: inputs.reconfState,
 			outs: {
@@ -27,7 +25,6 @@ export class ServerInstallProvider implements dynamic.ResourceProvider {
 	}
 	
 	async diff(id: any, olds: any, news: any) {
-		console.log("----------------- CALLING DIFF ON SERVER INSTALL ---------------")
 		const changed = news.reconfChanged;
 
 		return {
@@ -38,7 +35,6 @@ export class ServerInstallProvider implements dynamic.ResourceProvider {
 	}
 	
 	async update(id: any, olds: any, news: any) {
-		console.log("--- update server SHOULDN'T GO HERE -----")
 		return {
 			id: news.reconfState,
 			outs: {
@@ -51,7 +47,6 @@ export class ServerInstallProvider implements dynamic.ResourceProvider {
 	}
 	
 	async delete(id: any, props: any) {
-		console.log("---- delete server ----");
 	}
 }
 

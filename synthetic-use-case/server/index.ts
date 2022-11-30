@@ -23,23 +23,24 @@ const [
 	nb_concerto_nodes,
 	depNum,
 	inventory,
-	serverDeployTime
+	serverDeployTime,
+	logger
 ] = initializeReconf("server")
 
-console.log("script parameters:");
-console.log(
+logger.info("script parameters:");
+logger.info(
 	config_file_path,
 	timestamp_log_file,
 	g5k_execution_params_dir,
 	reconfiguration_name,
 	nb_concerto_nodes
 )
-console.log("------------");
+logger.info("------------");
 
 let deployTimestampRegistered = false;
 
 const program = async () => {
-	console.log("------ PROGRAM LAUNCHED -----------");
+	logger.info("------ PROGRAM LAUNCHED -----------");
 	if (!deployTimestampRegistered) {
 		let timestampType;
 		if(reconfiguration_name === "deploy") {
@@ -70,7 +71,7 @@ const program = async () => {
 		depsOffers.push(depWish.offer);
 	}
 	
-	console.log("Creating server");
+	logger.info("Creating server");
 	
 	const serverInstallRessource = new ServerInstallResource(
 		"server",
@@ -78,18 +79,19 @@ const program = async () => {
 			reconfState: reconfiguration_name,
 			time: serverDeployTime,
 			depsOffers: depsOffers
-		});
+		}
+	);
 	
 	serverInstallRessource.id.apply(
 		resultId => {
-			console.log("Got result Id: " + resultId);
+			logger.info("Got result Id: " + resultId);
 			if (resultId !== undefined) {
 				goToSleep(50);
 			}
 		}
 	)
 	
-	console.log("Getting ID")
+	logger.info("Getting ID")
 	return {
 		serverInstallId: serverInstallRessource.id
 	}

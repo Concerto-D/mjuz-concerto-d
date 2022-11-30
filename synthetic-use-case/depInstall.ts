@@ -1,6 +1,5 @@
 import { dynamic, Output } from '@pulumi/pulumi';
 
-
 export class DepInstallProvider implements dynamic.ResourceProvider {
 	async check(olds: any, news: any) {
 		// Add nameChanged value for the diff method
@@ -13,7 +12,6 @@ export class DepInstallProvider implements dynamic.ResourceProvider {
 
 	async create(inputs: any) {
 		const sleep = (s: number) => new Promise(r => setTimeout(r, s * 1000));
-		console.log("----------- WAITING " + inputs.time + "S -------")
 		await sleep(inputs.time);
 		return {
 			id: inputs.reconfState,
@@ -25,7 +23,6 @@ export class DepInstallProvider implements dynamic.ResourceProvider {
 	}
 	
 	async diff(id: any, olds: any, news: any) {
-		console.log("----------------- CALLING DIFF ON DEP INSTALL ---------------")
 		// TODO: check how to access olds parameter 
 		const changed = news.reconfChanged; 
 		
@@ -37,8 +34,6 @@ export class DepInstallProvider implements dynamic.ResourceProvider {
 	}
 	
 	async update(id: any, olds: any, news: any) { 
-		console.log("--- update dep SHOULDN'T GO HERE -----")
-		
 		return {
 			id: news.reconfState,
 			outs: {
@@ -51,7 +46,6 @@ export class DepInstallProvider implements dynamic.ResourceProvider {
 	}
 	
 	async delete(id: any, props: any) {
-		console.log("---- delete dep ----");
 	}
 }
 

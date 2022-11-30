@@ -1,15 +1,22 @@
 import Pino, { Level, Logger } from 'pino';
 
-const rootLogger = Pino({
-	prettyPrint: {
-		ignore: 'hostname',
-		hideObject: true,
-	},
-	level: 'info',
-});
+let rootLogger: any;
 const childLoggers: Logger[] = [];
 
-export const newLogger = (name: string): Logger => {
+export const newLogger = (name: string, logFileName = ''): Logger => {
+	if (rootLogger === undefined) {
+		rootLogger = Pino(
+			{
+				prettyPrint: {
+					ignore: 'hostname',
+					hideObject: true,
+				},
+				level: 'info',
+			},
+			Pino.destination(logFileName)
+		);
+	}
+
 	const logger = rootLogger.child({ c: name });
 	childLoggers.push(logger);
 	return logger;

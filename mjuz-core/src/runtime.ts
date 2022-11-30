@@ -74,21 +74,23 @@ export const registerTimeValue = (
 	}
 };
 
-export const registerEndAllTimeValues = (): void => {
-	console.log('GOT HERE');
+export const registerEndAllTimeValues = (logger: Logger): void => {
+	logger.info('Registing end times');
 	for (const timestampName in allTimestampsDict) {
 		if (!(TimestampPeriod.END in allTimestampsDict[timestampName])) {
+			logger.info(`Register end time for: ${timestampName}`);
 			allTimestampsDict[timestampName][TimestampPeriod.END] = new Date().getTime() / 1000;
 		}
 	}
+	logger.info('Done');
 };
 
-export const registerTimeValuesInFile = (): void => {
-	console.log('Writing file here: ' + globalVariables.logDirTimestamp);
+export const registerTimeValuesInFile = (logger: Logger): void => {
+	logger.info('Writing file here: ' + globalVariables.logDirTimestamp);
 	const fileName = `${globalVariables.execution_expe_dir}/${globalVariables.assemblyName}_${globalVariables.logDirTimestamp}.yaml`;
 	const yamlStr = YAML.stringify(allTimestampsDict);
 	fs.writeFileSync(fileName, yamlStr);
-	console.log('Done writing file');
+	logger.info('Done writing file');
 };
 
 type RuntimeOptions = {
@@ -152,10 +154,10 @@ export const runDeployment = <S>(
 	nextAction: (offerUpdates: Stream<void>) => Behavior<Behavior<Future<Action>>>,
 	options: Partial<RuntimeOptions> & { logger?: Logger; disableExit?: true } = {}
 ): Promise<S> => {
-	console.log('running deployment');
 	const opts = getOptions(options || {});
 	setLogLevel(opts.logLevel);
 	const logger = options.logger || newLogger('runtime');
+	logger.info('running deployment');
 	const setup = async () => {
 		const [resourcesService, deploymentService] = await Promise.all([
 			startResourcesService(
@@ -191,13 +193,13 @@ export const runDeployment = <S>(
 				.flatMap(when)
 		).subscribe(() => initialized.resolve());
 		const finalStack = await toPromise(completed);
-		console.log('wait everything');
+		logger.info('wait everything');
 		await Promise.all([
 			resourcesService.stop(),
 			deploymentService.stop(),
 			offersRuntime.stop(),
 		]);
-		console.log('end of run deployment');
+		logger.info('end of run deployment');
 		return finalStack;
 	};
 
@@ -207,9 +209,9 @@ export const runDeployment = <S>(
 			process.exit(1);
 		})
 		.finally(() => {
-			logger.info('Deployment terminated');
-			registerEndAllTimeValues();
-			registerTimeValuesInFile();
+			registerEndAllTimeValues(logger);
+			registerTimeValuesInFile(logger);
+			logger.info('---------------------- Going to sleep --------------------------------\n');
 			if (!options.disableExit) process.exit(exitCode);
 		});
 };

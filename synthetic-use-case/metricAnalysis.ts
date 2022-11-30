@@ -1,4 +1,4 @@
-import {globalVariables, registerTimeValue, setExitCode, TimestampPeriod, TimestampType} from "@mjuz/core";
+import {globalVariables, newLogger, registerTimeValue, setExitCode, TimestampPeriod, TimestampType} from "@mjuz/core";
 import * as fs from "fs";
 import * as YAML from "yaml";
 
@@ -36,8 +36,20 @@ export const initializeReconf = (assembly_type: string) => {
 	] = getScriptParameters(assembly_type);
 	globalVariables.execution_expe_dir = g5k_execution_params_dir;
 	
+	let assemblyName = "server";
+	if (assembly_type === "dep") {
+		assemblyName = `dep${depNum}`;
+	}
+	try {
+		if (!fs.existsSync(g5k_execution_params_dir)) fs.mkdirSync(g5k_execution_params_dir);
+	} catch {}
+	try {
+		if (!fs.existsSync(`${g5k_execution_params_dir}/logs`)) fs.mkdirSync(`${g5k_execution_params_dir}/logs`);
+	} catch {}
+	const logger = newLogger('pulumi',  `${g5k_execution_params_dir}/logs/logs_${assemblyName}`);
+	logger.info("---------------------------------- Waking up hello everyone ----------------------------------------------------")
 	// Initialization timestamp log dir
-	initTimeLogDir("server", g5k_execution_params_dir, timestamp_log_file);
+	initTimeLogDir("server", g5k_execution_params_dir, timestamp_log_file, logger);
 	
 	// Get location of nodes
 	const inventory = YAML.parse(fs.readFileSync("../../inventory.yaml", "utf-8"))
@@ -50,10 +62,6 @@ export const initializeReconf = (assembly_type: string) => {
 	setTimeout(() => goToSleep(0), 30000);
 	
 	// Compute server deployment time
-	let assemblyName = "server";
-	if (assembly_type === "dep") {
-		assemblyName = `dep${depNum}`;
-	}
 	let deployTime;
 	if(assemblyName === "server") {
 		deployTime = computeServerDeployTime(config_file_path, reconfiguration_name);
@@ -71,17 +79,19 @@ export const initializeReconf = (assembly_type: string) => {
 		nb_concerto_nodes,
 		depNum,
 		inventory,
-		deployTime
+		deployTime,
+		logger
 	]
 }
 
-export const initTimeLogDir = (assemblyName: string, g5k_execution_params_dir: string, logDirTimestamp: string | null): void => {
+export const initTimeLogDir = (assemblyName: string, g5k_execution_params_dir: string, logDirTimestamp: string | null, logger: any): void => {
+	
 	if(!fs.existsSync(g5k_execution_params_dir)) {
 		try {
 			fs.mkdirSync(g5k_execution_params_dir);
 		}
 		catch {
-			console.log(`------ RACE CONDITION HANDLED BY EXCEPTION: FOLDER ${g5k_execution_params_dir} WAS ALREADY CREATED`);
+			logger.info(`------ RACE CONDITION HANDLED BY EXCEPTION: FOLDER ${g5k_execution_params_dir} WAS ALREADY CREATED`);
 		}
 	}
 	globalVariables.assemblyName = assemblyName;

@@ -21,11 +21,12 @@ const [
 	nb_concerto_nodes,
 	depNum,
 	inventory,
-	depDeployTime
+	depDeployTime,
+	logger
 ] = initializeReconf("dep")
 
-console.log("script parameters:")
-console.log(
+logger.info("script parameters:")
+logger.info(
 	config_file_path,
 	timestamp_log_file,
 	g5k_execution_params_dir,
@@ -33,7 +34,7 @@ console.log(
 	nb_concerto_nodes,
 	depNum
 )
-console.log("------------")
+logger.info("------------")
 
 const program = async () => {
 	const serverHost = inventory["server"].split(":")[0]
