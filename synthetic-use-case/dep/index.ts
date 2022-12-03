@@ -48,7 +48,11 @@ const program = async () => {
 	
 	// For the update of the offer, need to also delete and replace the offer because the dep resource changed
 	// TODO: check if this is automatically handled by Mjuz
-	new Offer(contentManager, `dep${depNum}${reconfiguration_name}`, depInstallRessource)
+	// NOTE: Very ad-hoc solution to prevent Mjuz from blocking because the Offer has to be deleted
+	// and so it has to withdraw from Wish (which is deleted in the server side)
+	new Offer(contentManager, `dep${depNum}deploy`, depInstallRessource)
+	if(reconfiguration_name === 'update')
+		new Offer(contentManager, `dep${depNum}update`, depInstallRessource)
 	
 	return {
 		depInstallId: depInstallRessource.id

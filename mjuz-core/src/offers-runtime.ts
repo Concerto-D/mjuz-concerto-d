@@ -321,7 +321,7 @@ export const resendOffersOnConnect = (
 										`Failed to resend offer '${offer.name}' to remote '${offer.beneficiaryId}'`
 									);
 								else {
-									logger.info('FORWARING OFFER');
+									logger.info('FORWARDING OFFER');
 									logger.info(offer, deploymentName);
 								}
 							}
@@ -452,7 +452,7 @@ export const startOffersRuntime = async (
 			.flatMap(performStream)
 			.flatMap(flatFutures)
 	);
-	
+
 	const outboundOffers: Behavior<Offers> = runNow(
 		sample(
 			accumOutboundOffers(
