@@ -5,7 +5,7 @@ import * as YAML from "yaml";
 export const getScriptParameters = (assembly_name: string): [string, string, string, string, number, any] => {
 	const config_file_path = process.argv[4];
 	const timestamp_log_file = process.argv[5];
-	const g5k_execution_params_dir = process.argv[6];
+	const current_execution_dir = process.argv[6];
 	const reconfiguration_name = process.argv[7];
 	const nb_concerto_nodes = Number.parseInt(process.argv[8]);
 	let depNum = null;
@@ -16,7 +16,7 @@ export const getScriptParameters = (assembly_name: string): [string, string, str
 	return [
 		config_file_path, 
 		timestamp_log_file, 
-		g5k_execution_params_dir,
+		current_execution_dir,
 		reconfiguration_name,
 		nb_concerto_nodes,
 		depNum
@@ -29,27 +29,27 @@ export const initializeReconf = (assembly_type: string) => {
 	const [
 		config_file_path,
 		timestamp_log_file,
-		g5k_execution_params_dir,
+		current_execution_dir,
 		reconfiguration_name,
 		nb_concerto_nodes,
 		depNum
 	] = getScriptParameters(assembly_type);
-	globalVariables.execution_expe_dir = g5k_execution_params_dir;
+	globalVariables.execution_expe_dir = current_execution_dir;
 	
 	let assemblyName = "server";
 	if (assembly_type === "dep") {
 		assemblyName = `dep${depNum}`;
 	}
 	try {
-		if (!fs.existsSync(g5k_execution_params_dir)) fs.mkdirSync(g5k_execution_params_dir);
+		if (!fs.existsSync(current_execution_dir)) fs.mkdirSync(current_execution_dir);
 	} catch {}
 	try {
-		if (!fs.existsSync(`${g5k_execution_params_dir}/logs`)) fs.mkdirSync(`${g5k_execution_params_dir}/logs`);
+		if (!fs.existsSync(`${current_execution_dir}/logs`)) fs.mkdirSync(`${current_execution_dir}/logs`);
 	} catch {}
-	const logger = newLogger('pulumi',  `${g5k_execution_params_dir}/logs/logs_${assemblyName}`);
+	const logger = newLogger('pulumi',  `${current_execution_dir}/logs/logs_${assemblyName}`);
 	logger.info("---------------------------------- Waking up hello everyone ----------------------------------------------------")
 	// Initialization timestamp log dir
-	initTimeLogDir("server", g5k_execution_params_dir, timestamp_log_file, logger);
+	initTimeLogDir("server", current_execution_dir, timestamp_log_file, logger);
 	
 	// Get location of nodes
 	const inventory = YAML.parse(fs.readFileSync("../../inventory.yaml", "utf-8"))
@@ -74,7 +74,7 @@ export const initializeReconf = (assembly_type: string) => {
 	return [
 		config_file_path,
 		timestamp_log_file,
-		g5k_execution_params_dir,
+		current_execution_dir,
 		reconfiguration_name,
 		nb_concerto_nodes,
 		depNum,
@@ -84,14 +84,14 @@ export const initializeReconf = (assembly_type: string) => {
 	]
 }
 
-export const initTimeLogDir = (assemblyName: string, g5k_execution_params_dir: string, logDirTimestamp: string | null, logger: any): void => {
+export const initTimeLogDir = (assemblyName: string, current_execution_dir: string, logDirTimestamp: string | null, logger: any): void => {
 	
-	if(!fs.existsSync(g5k_execution_params_dir)) {
+	if(!fs.existsSync(current_execution_dir)) {
 		try {
-			fs.mkdirSync(g5k_execution_params_dir);
+			fs.mkdirSync(current_execution_dir);
 		}
 		catch {
-			logger.info(`------ RACE CONDITION HANDLED BY EXCEPTION: FOLDER ${g5k_execution_params_dir} WAS ALREADY CREATED`);
+			logger.info(`------ RACE CONDITION HANDLED BY EXCEPTION: FOLDER ${current_execution_dir} WAS ALREADY CREATED`);
 		}
 	}
 	globalVariables.assemblyName = assemblyName;

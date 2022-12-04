@@ -18,7 +18,7 @@ import {
 const [
 	config_file_path,
 	timestamp_log_file,
-	g5k_execution_params_dir,
+	current_execution_dir,
 	reconfiguration_name,
 	nb_concerto_nodes,
 	depNum,
@@ -31,7 +31,7 @@ logger.info("script parameters:");
 logger.info(
 	config_file_path,
 	timestamp_log_file,
-	g5k_execution_params_dir,
+	current_execution_dir,
 	reconfiguration_name,
 	nb_concerto_nodes
 )
