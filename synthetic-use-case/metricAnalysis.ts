@@ -62,12 +62,18 @@ export const initializeReconf = (assembly_type: string) => {
 	setTimeout(() => goToSleep(0), 30000);
 	
 	// Compute server deployment time
-	let deployTime;
+	let installTime;
+	let runningTime;
+	let updateTime;
 	if(assemblyName === "server") {
-		deployTime = computeServerDeployTime(config_file_path, reconfiguration_name);
+		installTime = computeServerInstallTime(config_file_path);
+		runningTime = computeServerRunningTime(config_file_path);
+		updateTime = computeServerUpdateTime(config_file_path);
 	}
 	else {
-		deployTime = computeDepDeployTime(config_file_path, assemblyName, reconfiguration_name);
+		installTime = computeDepInstallTime(config_file_path, assemblyName);
+		runningTime = computeDepRunningTime(config_file_path, assemblyName);
+		updateTime = computeDepUpdateTime(config_file_path, assemblyName);
 	}
 	// const deployTime = 20;
 	
@@ -79,7 +85,9 @@ export const initializeReconf = (assembly_type: string) => {
 		nb_concerto_nodes,
 		depNum,
 		inventory,
-		deployTime,
+		installTime,
+		runningTime,
+		updateTime,
 		logger
 	]
 }
@@ -117,29 +125,46 @@ export const goToSleep = (newExitCode: number): void => {
 };
 
 
-export const computeServerDeployTime = (transitions_times_file: string, reconfiguration_name: string): number => {
+export const computeServerInstallTime = (transitions_times_file: string): number => {
 	const transitions_times = JSON.parse(fs.readFileSync(transitions_times_file, "utf-8"));
 	const transitions_times_assembly = transitions_times["transitions_times"]["server"]
-	if(reconfiguration_name === "deploy") {
-		return transitions_times_assembly["t_sa"]
-		 	 + transitions_times_assembly["t_sc"].reduce((x: number, y: number) => x + y, 0)  // Sum of the list
-		     + transitions_times_assembly["t_sr"];
-	}
-	else {
-		return transitions_times_assembly["t_ss"].reduce((x: number, y: number) => x + y, 0)
-		     + transitions_times_assembly["t_sp"].reduce((x: number, y: number) => x + y, 0)
-			 + transitions_times_assembly["t_sr"]
-	}
+	
+	return transitions_times_assembly["t_sa"]
+		 + transitions_times_assembly["t_sc"].reduce((x: number, y: number) => x + y, 0)  // Sum of the list
 };
 
+export const computeServerUpdateTime = (transitions_times_file: string): number => {
+	const transitions_times = JSON.parse(fs.readFileSync(transitions_times_file, "utf-8"));
+	const transitions_times_assembly = transitions_times["transitions_times"]["server"]
+	
+	return transitions_times_assembly["t_ss"].reduce((x: number, y: number) => x + y, 0)
+		 + transitions_times_assembly["t_sp"].reduce((x: number, y: number) => x + y, 0)
+};
 
-export const computeDepDeployTime = (transitions_times_file: string, depName: string, reconfiguration_name: string): number => {
+export const computeServerRunningTime = (transitions_times_file: string): number => {
+	const transitions_times = JSON.parse(fs.readFileSync(transitions_times_file, "utf-8"));
+	const transitions_times_assembly = transitions_times["transitions_times"]["server"]
+	
+	return transitions_times_assembly["t_sr"];
+};
+
+export const computeDepRunningTime = (transitions_times_file: string, assemblyName: string): number => {
+	const transitions_times = JSON.parse(fs.readFileSync(transitions_times_file, "utf-8"));
+	const transitions_times_assembly = transitions_times["transitions_times"][assemblyName]
+	
+	return transitions_times_assembly["t_dr"];
+};
+
+export const computeDepInstallTime = (transitions_times_file: string, depName: string): number => {
 	const transitions_times = JSON.parse(fs.readFileSync(transitions_times_file, "utf-8"));
 	const transitions_times_assembly = transitions_times["transitions_times"][depName]
-	if(reconfiguration_name === "deploy") {
-		return transitions_times_assembly["t_di"] + transitions_times_assembly["t_dr"];
-	}
-	else {
-		return transitions_times_assembly["t_du"] + transitions_times_assembly["t_dr"];
-	}
+	
+	return transitions_times_assembly["t_di"];
+};
+
+export const computeDepUpdateTime = (transitions_times_file: string, depName: string): number => {
+	const transitions_times = JSON.parse(fs.readFileSync(transitions_times_file, "utf-8"));
+	const transitions_times_assembly = transitions_times["transitions_times"][depName]
+
+	return transitions_times_assembly["t_du"];
 };

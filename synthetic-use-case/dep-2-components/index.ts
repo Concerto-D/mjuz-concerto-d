@@ -42,21 +42,30 @@ const program = async () => {
 	const serverHost = inventory["server"].split(":")[0]
 	const contentManager = new RemoteConnection(`dep${depNum}`, { port: 19952, host: serverHost});
 	
-	const deployTime = reconfiguration_name === "deploy" ? installTime + runningTime : updateTime + runningTime
+	const deployTime = reconfiguration_name === "deploy" ? runningTime : updateTime + runningTime
 	
-	// For update: delete and replace resource
+	//  For update: delete and replace resource
 	const depInstallRessource = new DepInstallResource(
-		`dep${depNum}${reconfiguration_name}`, 
-		{reconfState: reconfiguration_name, time: deployTime}
+		`dep${depNum}Install`, 
+		{reconfState: "install", time: installTime}
+	);
+
+	new Offer(contentManager, `dep${depNum}install`, depInstallRessource)
+	
+	console.log(`DEPLOY TIME: ${deployTime}`);
+	const depRunningRessource = new DepInstallResource(
+		`dep${depNum}Running${reconfiguration_name}`, 
+		{reconfState: reconfiguration_name, time: deployTime},
+		{dependsOn: depInstallRessource}
 	);
 	
 	// For the update of the offer, need to also delete and replace the offer because the dep resource changed
 	// TODO: check if this is automatically handled by Mjuz
 	// NOTE: Very ad-hoc solution to prevent Mjuz from blocking because the Offer has to be deleted
 	// and so it has to withdraw from Wish (which is deleted in the server side)
-	new Offer(contentManager, `dep${depNum}deploy`, depInstallRessource)
+	new Offer(contentManager, `dep${depNum}deploy`, depRunningRessource)
 	if(reconfiguration_name === 'update')
-		new Offer(contentManager, `dep${depNum}update`, depInstallRessource)
+		new Offer(contentManager, `dep${depNum}update`, depRunningRessource)
 	
 	return {
 		depInstallId: depInstallRessource.id
@@ -66,8 +75,8 @@ const program = async () => {
 const initStack = getStack(
 	{
 		program: emptyProgram,
-		projectName: `Dep${depNum}DeployAndUpdate`,
-		stackName: `dep${depNum}`,
+		projectName: `Dep${depNum}DeployAndUpdate2Comps`,
+		stackName: `dep${depNum}2Comps`,
 	},
 	{ workDir: '.' }
 );
