@@ -34,8 +34,8 @@ logger.info(config_file_path)
 logger.info(timestamp_log_file)
 logger.info(current_execution_dir)
 logger.info(reconfiguration_name)
-logger.info(nb_concerto_nodes)
-logger.info(depNum)
+logger.info(`${nb_concerto_nodes}`)
+logger.info(`${depNum}`)
 logger.info("------------");
 
 let deployTimestampRegistered = false;
