@@ -52,7 +52,7 @@ export const initializeReconf = (assembly_type: string) => {
 	initTimeLogDir("server", current_execution_dir, timestamp_log_file, logger);
 	
 	// Get location of nodes
-	const inventory = YAML.parse(fs.readFileSync("../../inventory.yaml", "utf-8"))
+	const inventory = YAML.parse(fs.readFileSync(`${current_execution_dir}/inventory.yaml`, "utf-8"))
 	
 	// Set duration timeout (always 30 seconds)
 	// let t = 30000;
