@@ -46,7 +46,7 @@ export const initializeReconf = (assembly_type: string) => {
 	try {
 		if (!fs.existsSync(`${current_execution_dir}/logs`)) fs.mkdirSync(`${current_execution_dir}/logs`);
 	} catch {}
-	const logger = newLogger('pulumi',  `${current_execution_dir}/logs/logs_${assemblyName}`);
+	const logger = newLogger('pulumi',  `${current_execution_dir}/logs/logs_${assemblyName}.txt`);
 	logger.info("---------------------------------- Waking up hello everyone ----------------------------------------------------")
 	// Initialization timestamp log dir
 	initTimeLogDir("server", current_execution_dir, timestamp_log_file, logger);
