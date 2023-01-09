@@ -39,6 +39,7 @@ export const globalVariables = {
 	execution_expe_dir: '',
 	logDirTimestamp: '',
 	assemblyName: '',
+	reconfigurationName: '',
 };
 
 type timestampDictType = {
@@ -87,8 +88,13 @@ export const registerEndAllTimeValues = (logger: Logger): void => {
 
 export const registerTimeValuesInFile = (logger: Logger): void => {
 	logger.info('Writing file here: ' + globalVariables.logDirTimestamp);
-	const fileName = `${globalVariables.execution_expe_dir}/${globalVariables.assemblyName}_${globalVariables.logDirTimestamp}.yaml`;
+	const reconfigurationDir = `${globalVariables.execution_expe_dir}/${globalVariables.reconfigurationName}`;
+	const fileName = `${reconfigurationDir}/${globalVariables.assemblyName}_${globalVariables.logDirTimestamp}.yaml`;
 	const yamlStr = YAML.stringify(allTimestampsDict);
+	try {
+		if (!fs.existsSync(reconfigurationDir)) fs.mkdirSync(reconfigurationDir);
+		// eslint-disable-next-line no-empty
+	} catch {}
 	fs.writeFileSync(fileName, yamlStr);
 	logger.info('Done writing file');
 };

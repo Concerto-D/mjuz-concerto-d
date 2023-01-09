@@ -39,17 +39,17 @@ logger.info("------------")
 const program = async () => {
 	const serverHost = inventory["server"].split(":")[0]
 	const contentManager = new RemoteConnection(`dep${depNum}`, { port: 19952, host: serverHost});
-	
+	const ofs=[];
 	const deployTime = reconfiguration_name === "deploy" ? runningTime : updateTime + runningTime
-	
+	// const deployTime = 7;
 	//  For update: delete and replace resource
 	const depInstallRessource = new DepInstallResource(
 		`dep${depNum}Install`, 
 		{reconfState: "install", time: installTime}
 	);
 
-	new Offer(contentManager, `dep${depNum}install`, depInstallRessource)
-	
+	const o = new Offer(contentManager, `dep${depNum}install`, depInstallRessource)
+	ofs.push(o);
 	console.log(`DEPLOY TIME: ${deployTime}`);
 	const depRunningRessource = new DepInstallResource(
 		`dep${depNum}Running${reconfiguration_name}`, 
@@ -61,13 +61,16 @@ const program = async () => {
 	// TODO: check if this is automatically handled by Mjuz
 	// NOTE: Very ad-hoc solution to prevent Mjuz from blocking because the Offer has to be deleted
 	// and so it has to withdraw from Wish (which is deleted in the server side)
-	new Offer(contentManager, `dep${depNum}deploy`, depRunningRessource)
+	const a = new Offer(contentManager, `dep${depNum}deploy`, depRunningRessource)
+	ofs.push(a)
+	let l = undefined;
 	if(reconfiguration_name === 'update')
-		new Offer(contentManager, `dep${depNum}update`, depRunningRessource)
-	
+		l = new Offer(contentManager, `dep${depNum}update`, depRunningRessource)
+	ofs.push(l)
+	console.log(ofs);
 	return {
 		depInstallId: depInstallRessource.id
-	}
+	}	
 };
 
 const initStack = getStack(

@@ -35,6 +35,7 @@ export const initializeReconf = (assembly_type: string) => {
 		depNum
 	] = getScriptParameters(assembly_type);
 	globalVariables.execution_expe_dir = current_execution_dir;
+	globalVariables.reconfigurationName = reconfiguration_name;
 	
 	let assemblyName = "server";
 	if (assembly_type === "dep") {

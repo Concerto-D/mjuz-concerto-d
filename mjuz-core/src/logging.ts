@@ -10,6 +10,7 @@ export const newLogger = (name: string, logFileName = ''): Logger => {
 				prettyPrint: {
 					ignore: 'hostname',
 					hideObject: true,
+					translateTime: true,
 				},
 				level: 'info',
 			},
@@ -18,6 +19,21 @@ export const newLogger = (name: string, logFileName = ''): Logger => {
 	}
 
 	const logger = rootLogger.child({ c: name });
+	process.on('uncaughtException', (err) => {
+		logger.error(err);
+		process.exit(1);
+	});
+
+	process.on('unhandledRejection', (err) => {
+		logger.error(err);
+		process.exit(1);
+	});
+
+	process.on('UnhandledPromiseRejectionWarning', (err) => {
+		logger.error(err);
+		process.exit(1);
+	});
+
 	childLoggers.push(logger);
 	return logger;
 };

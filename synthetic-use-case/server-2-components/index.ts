@@ -85,7 +85,8 @@ const program = async () => {
 	);
 	
 	// Create running ressource and wishes
-	const deployTime = reconfiguration_name === "deploy" ? runningTime : updateTime + runningTime
+	const deployTime = reconfiguration_name === "deploy" ? runningTime : updateTime + runningTime;
+	// const deployTime = 1;
 	
 	const runningWishes = [];
 	const runningDepsOffers = [];
@@ -114,7 +115,6 @@ const program = async () => {
 		}
 	)
 	
-	logger.info("Getting ID")
 	return {
 		serverInstallId: serverRunningRessource.id
 	}
