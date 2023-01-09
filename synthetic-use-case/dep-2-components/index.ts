@@ -39,7 +39,6 @@ logger.info("------------")
 const program = async () => {
 	const serverHost = inventory["server"].split(":")[0]
 	const contentManager = new RemoteConnection(`dep${depNum}`, { port: 19952, host: serverHost});
-	const ofs=[];
 	const deployTime = reconfiguration_name === "deploy" ? runningTime : updateTime + runningTime
 	// const deployTime = 7;
 	//  For update: delete and replace resource
@@ -48,8 +47,7 @@ const program = async () => {
 		{reconfState: "install", time: installTime}
 	);
 
-	const o = new Offer(contentManager, `dep${depNum}install`, depInstallRessource)
-	ofs.push(o);
+	new Offer(contentManager, `dep${depNum}install`, depInstallRessource)
 	console.log(`DEPLOY TIME: ${deployTime}`);
 	const depRunningRessource = new DepInstallResource(
 		`dep${depNum}Running${reconfiguration_name}`, 
@@ -61,15 +59,16 @@ const program = async () => {
 	// TODO: check if this is automatically handled by Mjuz
 	// NOTE: Very ad-hoc solution to prevent Mjuz from blocking because the Offer has to be deleted
 	// and so it has to withdraw from Wish (which is deleted in the server side)
-	const a = new Offer(contentManager, `dep${depNum}deploy`, depRunningRessource)
-	ofs.push(a)
-	let l = undefined;
+	new Offer(contentManager, `dep${depNum}deploy`, depRunningRessource)
 	if(reconfiguration_name === 'update')
-		l = new Offer(contentManager, `dep${depNum}update`, depRunningRessource)
-	ofs.push(l)
-	console.log(ofs);
+		new Offer(contentManager, `dep${depNum}update`, depRunningRessource)
+
+	// Don't let any "dangling" resources (dangling means not exported) because of this issue:
+	// https://github.com/pulumi/pulumi/issues/6998
+	// That's why depInstallRessource and depRunningRessource have to be exported
 	return {
-		depInstallId: depInstallRessource.id
+		depInstallId: depInstallRessource.id,
+		depRunningRessourceId: depRunningRessource.id 
 	}	
 };
 
