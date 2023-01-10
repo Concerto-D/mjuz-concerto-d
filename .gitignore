@@ -125,3 +125,6 @@ Pulumi.*.yaml
 mjuz-core/Pulumi.yaml
 webpage/src/decentral-mjuz/bucket/Pulumi.yaml
 webpage/src/decentral-mjuz/content/Pulumi.yaml
+synthetic-use-case/dep-2-components/Pulumi.yaml
+synthetic-use-case/server-2-components/Pulumi.yaml
+
