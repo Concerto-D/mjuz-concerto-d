@@ -852,6 +852,7 @@ __metadata:
   resolution: "@mjuz/grpc-protos@workspace:mjuz-grpc-protos"
   dependencies:
     "@types/google-protobuf": 3.15.2
+    grpc_tools_node_protoc_ts: 5.2.2
     typescript: 4.2.4
   peerDependencies:
     "@grpc/grpc-js": 1.3.2
@@ -3073,6 +3074,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"google-protobuf@npm:3.15.8":
+  version: 3.15.8
+  resolution: "google-protobuf@npm:3.15.8"
+  checksum: 5b97393a6f5f3649d3ca3dca38b32ac3b7b44cdd6cd597d19a2ae2e4c74d150904c99971992872e8cde1a2a99b2ae16ae82276be640a2ffa3600e66689e23eb3
+  languageName: node
+  linkType: hard
+
 "google-protobuf@npm:^3.5.0":
   version: 3.16.0
   resolution: "google-protobuf@npm:3.16.0"
@@ -3084,6 +3092,36 @@ __metadata:
   version: 4.2.6
   resolution: "graceful-fs@npm:4.2.6"
   checksum: 84d39c7756892553da990a9db7e45f844b3309b37b5a00174cbb4748476f2250c54f24594d4d252f64f085c65c2fdac7c809419bf6d55f0e6e42eb07ac0f5bf2
+  languageName: node
+  linkType: hard
+
+"grpc_tools_node_protoc_ts@npm:5.2.2":
+  version: 5.2.2
+  resolution: "grpc_tools_node_protoc_ts@npm:5.2.2"
+  dependencies:
+    google-protobuf: 3.15.8
+    handlebars: 4.7.7
+  bin:
+    protoc-gen-ts: bin/protoc-gen-ts
+  checksum: d25ed9fa77820642f53e5db25a5fc867fad8c62fa0772430cf3b00de0c05fd7ad02aa091f5b93f335954e9f81d6bc63b8ffb888a8d02f1f493bf0f74cdf07d3e
+  languageName: node
+  linkType: hard
+
+"handlebars@npm:4.7.7":
+  version: 4.7.7
+  resolution: "handlebars@npm:4.7.7"
+  dependencies:
+    minimist: ^1.2.5
+    neo-async: ^2.6.0
+    source-map: ^0.6.1
+    uglify-js: ^3.1.4
+    wordwrap: ^1.0.0
+  dependenciesMeta:
+    uglify-js:
+      optional: true
+  bin:
+    handlebars: bin/handlebars
+  checksum: 2df9a6b422e2ccc0b7ca53f7a1f9915b47d19bf3fd372824a87e2a28b7952fa2cb3348cbe33a87ef49ee04f42d10359aab44819ca8d680ee3a5b53d48bd062a1
   languageName: node
   linkType: hard
 
@@ -4591,6 +4629,13 @@ __metadata:
   version: 1.4.0
   resolution: "natural-compare@npm:1.4.0"
   checksum: 2daf93d9bb516eddb06e2e80657a605af2e494d47c65d090ba43691aaffbc41f520840f1c9d3b7b641977af950217a4ab6ffb85bafcd5dfa8ba6fe4e68c43b53
+  languageName: node
+  linkType: hard
+
+"neo-async@npm:^2.6.0":
+  version: 2.6.2
+  resolution: "neo-async@npm:2.6.2"
+  checksum: 34a8f5309135be258a97082af810ea43700a3e0121e7b1ea31b3e22e2663d7c0d502cd949abb6d1ab8c11abfd04500ee61721ec5408b2d4bef8105241fd8a4c2
   languageName: node
   linkType: hard
 
@@ -6251,6 +6296,15 @@ typescript@~3.7.3:
   languageName: node
   linkType: hard
 
+"uglify-js@npm:^3.1.4":
+  version: 3.17.4
+  resolution: "uglify-js@npm:3.17.4"
+  bin:
+    uglifyjs: bin/uglifyjs
+  checksum: e57c01b750f0d72390aa2d434802dda2c4ac2adbb2e3d9b75343624ae89847bec1628ae2663e1a7de35710799a3bae72d896a564cfb2eb7e642f1c12fea51da2
+  languageName: node
+  linkType: hard
+
 "unbox-primitive@npm:^1.0.0":
   version: 1.0.1
   resolution: "unbox-primitive@npm:1.0.1"
@@ -6490,6 +6544,13 @@ typescript@~3.7.3:
   version: 1.2.3
   resolution: "word-wrap@npm:1.2.3"
   checksum: 6526abd75d4409c76d1989cf2fbf6080b903db29824be3d17d0a0b8f6221486c76a021174eda2616cf311199787983c34bae3c5e7b51d2ad7476f2066cddb75a
+  languageName: node
+  linkType: hard
+
+"wordwrap@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "wordwrap@npm:1.0.0"
+  checksum: b4f3f8104a727d1b08e77f43f3692977146f13074392747a3d9cfd631d0fc3ff1c0c034d44fcd7a22183c6505d2fc305421e3512671f8a56f903055671ace4ce
   languageName: node
   linkType: hard
 
