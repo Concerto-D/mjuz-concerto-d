@@ -1,0 +1,20 @@
+import { Behavior } from '@funkia/hareactive';
+import { IO } from '@funkia/io';
+import * as pulumi from '@pulumi/pulumi/automation';
+import { InlineProgramArgs, PulumiFn } from '@pulumi/pulumi/automation';
+import { Logger } from 'pino';
+import { Action } from '.';
+export declare const emptyProgram: PulumiFn;
+export declare type Stack = {
+    readonly stack: pulumi.Stack;
+    readonly isDeployed: boolean;
+    readonly isDestroyed: boolean;
+};
+export declare const pulumiCreateOrSelectStack: (args: pulumi.InlineProgramArgs, workspaceOptions?: pulumi.LocalWorkspaceOptions | undefined) => IO<pulumi.Stack>;
+export declare const pulumiSetStackConfig: (stack: pulumi.Stack, config: pulumi.ConfigMap) => IO<void>;
+export declare const getStack: (args: InlineProgramArgs, workspaceOptions?: pulumi.LocalWorkspaceOptions | undefined, config?: pulumi.ConfigMap | undefined, logger?: Logger) => IO<Stack>;
+export declare const pulumiUp: (stack: pulumi.Stack, program: pulumi.PulumiFn, logger: Logger) => IO<pulumi.UpResult>;
+export declare const deploy: (stack: Stack, targetState: PulumiFn, logger: Logger) => IO<Stack>;
+export declare const pulumiDestroy: (stack: pulumi.Stack, logger: Logger) => IO<pulumi.DestroyResult>;
+export declare const destroy: (stack: Stack, logger: Logger) => IO<Stack>;
+export declare const operations: (program: Behavior<PulumiFn>, logger?: Logger) => (action: Action) => (stack: Stack) => IO<Stack>;
