@@ -74,7 +74,8 @@ const program = async () => {
 		installWishes.push(depWish);
 		installDepOffers.push(depWish.offer);
 	}
-		
+	
+	logger.info(`Server installTime: ${installTime}`);
 	const serverInstallRessource = new ServerInstallResource(
 		"serverInstall",
 		{
@@ -86,6 +87,7 @@ const program = async () => {
 	
 	// Create running ressource and wishes
 	const deployTime = reconfiguration_name === "deploy" ? runningTime : updateTime + runningTime;
+	logger.info(`Server deployTime: ${deployTime}`);
 	
 	const runningWishes = [];
 	const runningDepsOffers = [];

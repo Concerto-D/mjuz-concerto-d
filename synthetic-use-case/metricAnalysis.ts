@@ -67,9 +67,9 @@ export const initializeReconf = (assembly_type: string) => {
 	let runningTime;
 	let updateTime;
 	if(assemblyName === "server") {
-		installTime = computeServerInstallTime(config_file_path);
+		installTime = computeServerInstallTime(config_file_path, nb_concerto_nodes);
 		runningTime = computeServerRunningTime(config_file_path);
-		updateTime = computeServerUpdateTime(config_file_path);
+		updateTime = computeServerUpdateTime(config_file_path, nb_concerto_nodes);
 	}
 	else {
 		installTime = computeDepInstallTime(config_file_path, assemblyName);
@@ -126,20 +126,27 @@ export const goToSleep = (newExitCode: number): void => {
 };
 
 
-export const computeServerInstallTime = (transitions_times_file: string): number => {
+export const computeServerInstallTime = (transitions_times_file: string, nb_deps_tot: number): number => {
 	const transitions_times = JSON.parse(fs.readFileSync(transitions_times_file, "utf-8"));
 	const transitions_times_assembly = transitions_times["transitions_times"]["server"]
+	let t_sc_sum = 0;
+	for (let i = 0; i < nb_deps_tot; i++) {
+		t_sc_sum += transitions_times_assembly["t_sc"][i]
+	}
 	
-	return transitions_times_assembly["t_sa"]
-		 + transitions_times_assembly["t_sc"].reduce((x: number, y: number) => x + y, 0)  // Sum of the list
+	return transitions_times_assembly["t_sa"] + t_sc_sum
 };
 
-export const computeServerUpdateTime = (transitions_times_file: string): number => {
+export const computeServerUpdateTime = (transitions_times_file: string, nb_deps_tot: number): number => {
 	const transitions_times = JSON.parse(fs.readFileSync(transitions_times_file, "utf-8"));
 	const transitions_times_assembly = transitions_times["transitions_times"]["server"]
+	let t_ss_sp_sum = 0;
+	for (let i = 0; i < nb_deps_tot; i++) {
+		t_ss_sp_sum += transitions_times_assembly["t_ss"][i]
+		t_ss_sp_sum += transitions_times_assembly["t_sp"][i]
+	}
 	
-	return transitions_times_assembly["t_ss"].reduce((x: number, y: number) => x + y, 0)
-		 + transitions_times_assembly["t_sp"].reduce((x: number, y: number) => x + y, 0)
+	return t_ss_sp_sum
 };
 
 export const computeServerRunningTime = (transitions_times_file: string): number => {

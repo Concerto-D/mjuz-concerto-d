@@ -40,6 +40,8 @@ const program = async () => {
 	const serverHost = inventory["server"].split(":")[0]
 	const contentManager = new RemoteConnection(`dep${depNum}`, { port: 19952, host: serverHost});
 	const deployTime = reconfiguration_name === "deploy" ? runningTime : updateTime + runningTime
+	logger.info(`dep${depNum} installTime: ${installTime}`);
+	
 	// const deployTime = 7;
 	//  For update: delete and replace resource
 	const depInstallRessource = new DepInstallResource(
@@ -48,7 +50,7 @@ const program = async () => {
 	);
 
 	new Offer(contentManager, `dep${depNum}install`, depInstallRessource)
-	console.log(`DEPLOY TIME: ${deployTime}`);
+	logger.info(`dep${depNum} deployTime: ${deployTime}`);
 	const depRunningRessource = new DepInstallResource(
 		`dep${depNum}Running${reconfiguration_name}`, 
 		{reconfState: reconfiguration_name, time: deployTime},
