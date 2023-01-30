@@ -60,7 +60,7 @@ export const initializeReconf = (assembly_type: string) => {
 	// if (reconfiguration_name === "update") {
 	// 	t = 300000;
 	// }
-	setTimeout(() => goToSleep(0), 30000);
+	setTimeout(() => goToSleep(0), 40000);
 	
 	// Compute server deployment time
 	let installTime;
