@@ -2,19 +2,21 @@ import {globalVariables, newLogger, registerTimeValue, setExitCode, TimestampPer
 import * as fs from "fs";
 import * as YAML from "yaml";
 
-export const getScriptParameters = (assembly_name: string): [string, string, string, string, number, any] => {
+export const getScriptParameters = (assembly_name: string): [string, number, string, string, string, number, any] => {
 	const config_file_path = process.argv[4];
-	const timestamp_log_file = process.argv[5];
-	const current_execution_dir = process.argv[6];
-	const reconfiguration_name = process.argv[7];
-	const nb_concerto_nodes = Number.parseInt(process.argv[8]);
+	const duration = Number.parseInt(process.argv[5]);
+	const timestamp_log_file = process.argv[6];
+	const current_execution_dir = process.argv[7];
+	const reconfiguration_name = process.argv[8];
+	const nb_concerto_nodes = Number.parseInt(process.argv[9]);
 	let depNum = null;
 	if(assembly_name !== "server") {
-		depNum = Number.parseInt(process.argv[9]);
+		depNum = Number.parseInt(process.argv[10]);
 	}
 
 	return [
 		config_file_path, 
+		duration,
 		timestamp_log_file, 
 		current_execution_dir,
 		reconfiguration_name,
@@ -28,6 +30,7 @@ export const initializeReconf = (assembly_type: string) => {
 	registerTimeValue(TimestampType.UPTIME, TimestampPeriod.START);
 	const [
 		config_file_path,
+		duration,
 		timestamp_log_file,
 		current_execution_dir,
 		reconfiguration_name,
@@ -60,7 +63,7 @@ export const initializeReconf = (assembly_type: string) => {
 	// if (reconfiguration_name === "update") {
 	// 	t = 300000;
 	// }
-	setTimeout(() => goToSleep(0), 40000);
+	setTimeout(() => goToSleep(0), duration * 1000);
 	
 	// Compute server deployment time
 	let installTime;
