@@ -24,7 +24,6 @@ const core_1 = require("@mjuz/core");
 const fs = __importStar(require("fs"));
 const YAML = __importStar(require("yaml"));
 const getScriptParameters = (assembly_name) => {
-    console.log(process.argv);
     const config_file_path = process.argv[4];
     const duration = Number.parseInt(process.argv[5]);
     const timestamp_log_file = process.argv[6];
