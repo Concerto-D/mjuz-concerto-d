@@ -63,7 +63,7 @@ export const initializeReconf = (assembly_type: string) => {
 	// if (reconfiguration_name === "update") {
 	// 	t = 300000;
 	// }
-	setTimeout(() => goToSleep(0), duration * 1000);
+	setExitCode(0);  // Set default exit code
 	
 	// Compute server deployment time
 	let installTime;
