@@ -27,7 +27,7 @@ export const getScriptParameters = (assembly_name: string): [string, number, str
 
 export const initializeReconf = (assembly_type: string) => {
 	// Register UPTIME START
-	registerTimeValue(TimestampType.UPTIME, TimestampPeriod.START);
+	// registerTimeValue(TimestampType.UPTIME, TimestampPeriod.START);
 	const [
 		config_file_path,
 		duration,
