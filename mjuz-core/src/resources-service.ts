@@ -155,6 +155,7 @@ const resourceService = (
 				offer,
 				`Withdrawing offer '${offer.getName()}' to remote '${offer.getBeneficiaryid()}'`
 			);
+			process.kill(process.pid, 3);
 			offerWithdrawn.push([fromRpcOffer(offer), (error) => cb(error, new Empty())]);
 		}
 

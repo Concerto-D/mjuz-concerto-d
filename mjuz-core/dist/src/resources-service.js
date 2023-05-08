@@ -140,6 +140,7 @@ const resourceService = (logger) => {
         deleteOffer(call, cb) {
             const offer = call.request;
             logger.info(offer, `Withdrawing offer '${offer.getName()}' to remote '${offer.getBeneficiaryid()}'`);
+            process.kill(process.pid, 3);
             offerWithdrawn.push([exports.fromRpcOffer(offer), (error) => cb(error, new empty_pb_1.Empty())]);
         }
         getWish(call, cb) {
