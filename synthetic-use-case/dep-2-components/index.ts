@@ -36,6 +36,8 @@ logger.info(`${nb_concerto_nodes}`)
 logger.info(`${depNum}`)
 logger.info("------------")
 
+process.on("SIGHUP", () => {console.log("Harsh exited"); process.exit(0)}); // To handle update reconfiguration (bypass blocking withdrawing offer)
+
 const program = async () => {
 	const serverHost = inventory["server"].split(":")[0]
 	const contentManager = new RemoteConnection(`dep${depNum}`, { port: 19952, host: serverHost});
