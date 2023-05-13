@@ -61,8 +61,7 @@ const program = async () => {
 	// TODO: check if this is automatically handled by Mjuz
 	// NOTE: Very ad-hoc solution to prevent Mjuz from blocking because the Offer has to be deleted
 	// and so it has to withdraw from Wish (which is deleted in the server side)
-	if(reconfiguration_name === 'deploy')
-		new Offer(contentManager, `dep${depNum}deploy`, depRunningRessource)
+	new Offer(contentManager, `dep${depNum}deploy`, depRunningRessource)
 	if(reconfiguration_name === 'update')
 		new Offer(contentManager, `dep${depNum}update`, depRunningRessource)
 

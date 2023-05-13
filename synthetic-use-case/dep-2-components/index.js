@@ -38,8 +38,7 @@ const program = () => __awaiter(void 0, void 0, void 0, function* () {
     // TODO: check if this is automatically handled by Mjuz
     // NOTE: Very ad-hoc solution to prevent Mjuz from blocking because the Offer has to be deleted
     // and so it has to withdraw from Wish (which is deleted in the server side)
-	if(reconfiguration_name === 'deploy')
-    	new resources_1.Offer(contentManager, `dep${depNum}deploy`, depRunningRessource);
+    new resources_1.Offer(contentManager, `dep${depNum}deploy`, depRunningRessource);
     if (reconfiguration_name === 'update')
         new resources_1.Offer(contentManager, `dep${depNum}update`, depRunningRessource);
     // Don't let any "dangling" resources (dangling means not exported) because of this issue:
