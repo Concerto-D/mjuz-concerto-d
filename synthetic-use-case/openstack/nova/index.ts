@@ -14,11 +14,13 @@ import {SleepingComponentResource} from "../../sleepingComponent";
 const logger = newLogger('pulumi');
 
 const program = async () => {
+	const reconfigurationName = "deploy"
 	const keystoneConnection = new RemoteConnection(`keystone`, { port: 19954, host: "localhost"});
+	// let keystoneResWish = new Wish<SleepingComponentResource>(workerConnection, `keystoneProvide${reconfigurationName}`);
 	let keystoneResWish = new Wish<SleepingComponentResource>(keystoneConnection, `keystoneProvide`);
 	const novaResource = new SleepingComponentResource(
-		`novaRes`,
-		{reconfState: `deploy`, time: 2.0, depsOffers: [keystoneResWish.offer]}
+		`novaRes${reconfigurationName}`,
+		{reconfState: keystoneResWish.offer, timeCreate: 5.0, timeDelete: 3.0, depsOffers: [keystoneResWish.offer]}
 	)
 	return {
 		novaResourceId: novaResource.id

@@ -12,12 +12,13 @@ export class SleepingComponentProvider implements dynamic.ResourceProvider {
 	
 	async create(inputs: any) {
 		const sleep = (s: number) => new Promise(r => setTimeout(r, s*1000));
-		await sleep(inputs.time);
+		await sleep(inputs.timeCreate);
 		return {
 			id: inputs.reconfState,
 			outs: {
 				reconfState: inputs.reconfState,
-				time: inputs.time,
+				timeCreate: inputs.timeCreate,
+				timeDelete: inputs.timeDelete,
 				depsOffers: inputs.depsOffers
 			},
 		};
@@ -28,7 +29,7 @@ export class SleepingComponentProvider implements dynamic.ResourceProvider {
 
 		return {
 			changes: changed,
-			replaces: ["reconfState"],
+			replaces: ["reconfState", "idProvide"],
 			deleteBeforeReplace: true
 		}
 	}
@@ -38,7 +39,8 @@ export class SleepingComponentProvider implements dynamic.ResourceProvider {
 			id: news.reconfState,
 			outs: {
 				reconfState: news.reconfState,
-				time: news.time,
+				timeCreate: news.timeCreate,
+				timeDelete: news.timeDelete,
 				depsOffers: news.depOffers
 			}
 		}
@@ -47,14 +49,16 @@ export class SleepingComponentProvider implements dynamic.ResourceProvider {
 	
 	async delete(id: any, props: any) {
 		const sleep = (s: number) => new Promise(r => setTimeout(r, s*1000));
-		await sleep(1);
+		await sleep(props.timeDelete);
 	}
 }
 
 export class SleepingComponentResource extends dynamic.Resource {
 	public readonly reconfState!: Output<string>;
-	public readonly time!: Output<number>;
+	public readonly timeCreate!: Output<number>;
+	public readonly timeDelete!: Output<number>;
 	public readonly depsOffers!: Output<any>;
+	public readonly idProvide: Output<any> | undefined;
 	
 	constructor(name: string, props: any, opts?: any) {
 		super(new SleepingComponentProvider(), name, props, opts);

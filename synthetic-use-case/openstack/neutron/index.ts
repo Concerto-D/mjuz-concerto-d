@@ -18,7 +18,7 @@ const program = async () => {
 	let keystoneResWish = new Wish<SleepingComponentResource>(keystoneConnection, `keystoneProvide`);
 	const neutronResource = new SleepingComponentResource(
 		`neutronRes`,
-		{reconfState: `deploy`, time: 2.0, depsOffers: [keystoneResWish.offer]}
+		{reconfState: keystoneResWish.offer, timeCreate: 2.0, timeDelete: 3.0, depsOffers: [keystoneResWish.offer]}
 	)
 	return {
 		neutronResourceId: neutronResource.id
