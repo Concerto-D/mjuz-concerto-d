@@ -2,26 +2,54 @@ import {
 	emptyProgram,
 	getStack, newLogger,
 	nextAction,
-	operations,
+	operations, registerTimeValue,
 	runDeployment,
 	sigint,
-	sigquit,
+	sigquit, TimestampPeriod, TimestampType,
 } from '@mjuz/core';
 import { Offer, RemoteConnection } from '@mjuz/core/resources';
 import { Behavior } from '@funkia/hareactive';
 import {SleepingComponentResource} from "../../sleepingComponent";
+import {goToSleep, initializeReconf} from "../../metricAnalysis";
 
-const logger = newLogger('pulumi');
+const compName = "mariadbmaster";
 
+const [
+	targetDeployment,
+	nbScalingNodes,
+	scalingNum,
+	inventory,
+	installTime,
+	runningTime,
+	updateTime,
+	logger
+] = initializeReconf(compName)
+
+const timestampType = targetDeployment === "deploy" ? TimestampType.DEPLOY : TimestampType.UPDATE
+
+let timestampRegistered = false;
 const program = async () => {
-	const reconfigurationName = "update"
-	const keystoneConnection = new RemoteConnection(`mariadbmaster`, { port: 19954, host: "localhost"});
+	if (!timestampRegistered) {
+		registerTimeValue(timestampType, TimestampPeriod.START);
+		timestampRegistered = true;
+	}
+	
+	// Create component
 	const mariadbmasterResource = new SleepingComponentResource(
-		`mariadbmasterRes${reconfigurationName}`,
-		{reconfState: reconfigurationName, timeCreate: 7.0, timeDelete: 3.0, depsOffers: []}
+		`${compName}Res${targetDeployment}`,
+		{reconfState: targetDeployment, timeCreate: 7.0, timeDelete: 3.0, depsOffers: []}
 	)
-	// new Offer(keystoneConnection, `mariadbmasterProvide${reconfigurationName}`, mariadbmasterResource)
-	new Offer(keystoneConnection, `mariadbmasterProvide`, mariadbmasterResource)
+	
+	// Provide component to keystone
+	const [keystoneHost, keystonePort] = inventory["keystone0"].split(":")
+	const keystoneConnection = new RemoteConnection(`keystone0`, { port: Number.parseInt(keystonePort), host: keystoneHost});
+	new Offer(keystoneConnection, `${compName}Provide`, mariadbmasterResource)
+	
+	mariadbmasterResource.id.apply(mariadbmasterResourceId => {
+		if (mariadbmasterResourceId === targetDeployment) {
+			goToSleep(50);
+		}
+	})
 	
 	return {
 		mariadbmasterResourceId: mariadbmasterResource.id
@@ -31,15 +59,16 @@ const program = async () => {
 const initStack = getStack(
 	{
 		program: emptyProgram,
-		projectName: `mariadbmasterProject`,
-		stackName: `mariadbmasterStack`,
+		projectName: `${compName}Project`,
+		stackName: `${compName}Stack`,
 	},
 	{ workDir: '.' }
 );
 
+const deploymentPort = Number.parseInt(inventory[compName].split(":")[1])
 runDeployment(
 	initStack,
 	operations(Behavior.of(program)),
 	(offerUpdates) => nextAction(offerUpdates, sigquit(), sigint()),
-	{ deploymentName: `mariadbmaster`, resourcesPort: 19959, deploymentPort: 19960 }
+	{ deploymentName: compName, resourcesPort: deploymentPort-1, deploymentPort: deploymentPort }
 );

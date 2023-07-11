@@ -14,13 +14,13 @@ const resources_1 = require("@mjuz/core/resources");
 const hareactive_1 = require("@funkia/hareactive");
 const depInstall_1 = require("../depInstall");
 const metricAnalysis_1 = require("../metricAnalysis");
-const [config_file_path, timestamp_log_file, current_execution_dir, reconfiguration_name, nb_concerto_nodes, depNum, inventory, installTime, runningTime, updateTime, logger] = metricAnalysis_1.initializeReconf("dep");
+const [config_file_path, timestamp_log_file, current_execution_dir, reconfiguration_name, nbScalingNodes, depNum, inventory, installTime, runningTime, updateTime, logger] = metricAnalysis_1.initializeReconf("dep");
 logger.info("script parameters:");
 logger.info(config_file_path);
 logger.info(timestamp_log_file);
 logger.info(current_execution_dir);
 logger.info(reconfiguration_name);
-logger.info(`${nb_concerto_nodes}`);
+logger.info(`${nbScalingNodes}`);
 logger.info(`${depNum}`);
 logger.info("------------");
 const program = () => __awaiter(void 0, void 0, void 0, function* () {

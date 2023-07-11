@@ -2,47 +2,43 @@ import {globalVariables, newLogger, registerTimeValue, setExitCode, TimestampPer
 import * as fs from "fs";
 import * as YAML from "yaml";
 
-export const getScriptParameters = (assembly_name: string): [string, number, string, string, string, number, any] => {
+export const getScriptParameters = (): [string, number, string, string, string, number, any] => {
 	const config_file_path = process.argv[4];
 	const duration = Number.parseInt(process.argv[5]);
 	const timestamp_log_file = process.argv[6];
 	const current_execution_dir = process.argv[7];
-	const reconfiguration_name = process.argv[8];
-	const nb_concerto_nodes = Number.parseInt(process.argv[9]);
-	let depNum = null;
-	if(assembly_name !== "server") {
-		depNum = Number.parseInt(process.argv[10]);
+	const targetDeployment = process.argv[8];
+	const nbScalingNodes = Number.parseInt(process.argv[9]);
+	let scalingNum = null;
+	if(process.argv.length > 10) {
+		scalingNum = Number.parseInt(process.argv[10]);
 	}
-
 	return [
 		config_file_path, 
 		duration,
 		timestamp_log_file, 
 		current_execution_dir,
-		reconfiguration_name,
-		nb_concerto_nodes,
-		depNum
+		targetDeployment,
+		nbScalingNodes,
+		scalingNum
 	]
 }
 
-export const initializeReconf = (assembly_type: string) => {
-	// Register UPTIME START
-	// registerTimeValue(TimestampType.UPTIME, TimestampPeriod.START);
+export const initializeReconf = (assemblyType: string) => {
 	const [
 		config_file_path,
 		duration,
 		timestamp_log_file,
 		current_execution_dir,
-		reconfiguration_name,
-		nb_concerto_nodes,
-		depNum
-	] = getScriptParameters(assembly_type);
+		targetDeployment,
+		nbScalingNodes,
+		scalingNum
+	] = getScriptParameters();
 	globalVariables.execution_expe_dir = current_execution_dir;
-	globalVariables.reconfigurationName = reconfiguration_name;
-	
-	let assemblyName = "server";
-	if (assembly_type === "dep") {
-		assemblyName = `dep${depNum}`;
+	globalVariables.reconfigurationName = targetDeployment;
+	let assemblyName = assemblyType
+	if(scalingNum !== null) {
+		assemblyName += scalingNum.toString()
 	}
 	try {
 		if (!fs.existsSync(current_execution_dir)) fs.mkdirSync(current_execution_dir);
@@ -53,41 +49,40 @@ export const initializeReconf = (assembly_type: string) => {
 	const logger = newLogger('pulumi',  `${current_execution_dir}/logs/logs_${assemblyName}.txt`);
 	logger.info("---------------------------------- Waking up hello everyone ----------------------------------------------------")
 	// Initialization timestamp log dir
-	initTimeLogDir("server", current_execution_dir, timestamp_log_file, logger);
+	initTimeLogDir(assemblyName, current_execution_dir, timestamp_log_file, logger);
 	
 	// Get location of nodes
 	const inventory = YAML.parse(fs.readFileSync(`${current_execution_dir}/inventory.yaml`, "utf-8"))
-	
-	// Set duration timeout (always 30 seconds)
-	// let t = 30000;
-	// if (reconfiguration_name === "update") {
-	// 	t = 300000;
-	// }
+
 	setExitCode(0);  // Set default exit code
 	
 	// Compute server deployment time
 	let installTime;
 	let runningTime;
 	let updateTime;
-	if(assemblyName === "server") {
-		installTime = computeServerInstallTime(config_file_path, nb_concerto_nodes);
-		runningTime = computeServerRunningTime(config_file_path);
-		updateTime = computeServerUpdateTime(config_file_path, nb_concerto_nodes);
-	}
-	else {
-		installTime = computeDepInstallTime(config_file_path, assemblyName);
-		runningTime = computeDepRunningTime(config_file_path, assemblyName);
-		updateTime = computeDepUpdateTime(config_file_path, assemblyName);
-	}
-	// const deployTime = 20;
+	// if(assemblyName === "server") {
+	// 	installTime = computeServerInstallTime(config_file_path, nbScalingNodes);
+	// 	runningTime = computeServerRunningTime(config_file_path);
+	// 	updateTime = computeServerUpdateTime(config_file_path, nbScalingNodes);
+	// }
+	// else {
+	// 	installTime = computeDepInstallTime(config_file_path, assemblyName);
+	// 	runningTime = computeDepRunningTime(config_file_path, assemblyName);
+	// 	updateTime = computeDepUpdateTime(config_file_path, assemblyName);
+	// }
+	logger.info("script parameters:");
+	logger.info(config_file_path)
+	logger.info(timestamp_log_file)
+	logger.info(current_execution_dir)
+	logger.info(targetDeployment)
+	logger.info(`${nbScalingNodes}`)
+	logger.info(`${scalingNum}`)
+	logger.info("------------");
 	
-	return [
-		config_file_path,
-		timestamp_log_file,
-		current_execution_dir,
-		reconfiguration_name,
-		nb_concerto_nodes,
-		depNum,
+	return [  // TODO: refacto parallel_deps
+		targetDeployment,
+		nbScalingNodes,
+		scalingNum,
 		inventory,
 		installTime,
 		runningTime,
@@ -98,14 +93,14 @@ export const initializeReconf = (assembly_type: string) => {
 
 export const initTimeLogDir = (assemblyName: string, current_execution_dir: string, logDirTimestamp: string | null, logger: any): void => {
 	
-	if(!fs.existsSync(current_execution_dir)) {
-		try {
-			fs.mkdirSync(current_execution_dir);
-		}
-		catch {
-			logger.info(`------ RACE CONDITION HANDLED BY EXCEPTION: FOLDER ${current_execution_dir} WAS ALREADY CREATED`);
-		}
-	}
+	// if(!fs.existsSync(current_execution_dir)) {
+	// 	try {
+	// 		fs.mkdirSync(current_execution_dir);
+	// 	}
+	// 	catch {
+	// 		logger.info(`------ RACE CONDITION HANDLED BY EXCEPTION: FOLDER ${current_execution_dir} WAS ALREADY CREATED`);
+	// 	}
+	// }
 	globalVariables.assemblyName = assemblyName;
 	if (logDirTimestamp !== null) {
 		globalVariables.logDirTimestamp = logDirTimestamp;

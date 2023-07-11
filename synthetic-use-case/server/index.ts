@@ -20,7 +20,7 @@ const [
 	timestamp_log_file,
 	current_execution_dir,
 	reconfiguration_name,
-	nb_concerto_nodes,
+	nbScalingNodes,
 	depNum,
 	inventory,
 	serverDeployTime,
@@ -33,7 +33,7 @@ logger.info(
 	timestamp_log_file,
 	current_execution_dir,
 	reconfiguration_name,
-	nb_concerto_nodes
+	nbScalingNodes
 )
 logger.info("------------");
 
@@ -57,7 +57,7 @@ const program = async () => {
 	const wishes = [];
 	const depsOffers = [];
 	let depNum: number;
-	for (depNum = 0; depNum < nb_concerto_nodes; depNum++) {
+	for (depNum = 0; depNum < nbScalingNodes; depNum++) {
 		const depName = `dep${depNum}`;
 		const depHost = inventory[depName].split(":")[0];
 		let remoteConn = new RemoteConnection(depName, { port: 19954 + 2*depNum, host: depHost});

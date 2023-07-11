@@ -23,37 +23,35 @@ exports.computeDepUpdateTime = exports.computeDepInstallTime = exports.computeDe
 const core_1 = require("@mjuz/core");
 const fs = __importStar(require("fs"));
 const YAML = __importStar(require("yaml"));
-const getScriptParameters = (assembly_name) => {
+const getScriptParameters = () => {
     const config_file_path = process.argv[4];
     const duration = Number.parseInt(process.argv[5]);
     const timestamp_log_file = process.argv[6];
     const current_execution_dir = process.argv[7];
-    const reconfiguration_name = process.argv[8];
-    const nb_concerto_nodes = Number.parseInt(process.argv[9]);
-    let depNum = null;
-    if (assembly_name !== "server") {
-        depNum = Number.parseInt(process.argv[10]);
+    const targetDeployment = process.argv[8];
+    const nbScalingNodes = Number.parseInt(process.argv[9]);
+    let scalingNum = null;
+    if (process.argv.length > 10) {
+        scalingNum = Number.parseInt(process.argv[10]);
     }
     return [
         config_file_path,
         duration,
         timestamp_log_file,
         current_execution_dir,
-        reconfiguration_name,
-        nb_concerto_nodes,
-        depNum
+        targetDeployment,
+        nbScalingNodes,
+        scalingNum
     ];
 };
 exports.getScriptParameters = getScriptParameters;
-const initializeReconf = (assembly_type) => {
-    // Register UPTIME START
-    core_1.registerTimeValue(core_1.TimestampType.UPTIME, core_1.TimestampPeriod.START);
-    const [config_file_path, duration, timestamp_log_file, current_execution_dir, reconfiguration_name, nb_concerto_nodes, depNum] = exports.getScriptParameters(assembly_type);
+const initializeReconf = (assemblyType) => {
+    const [config_file_path, _, timestamp_log_file, current_execution_dir, targetDeployment, nbScalingNodes, scalingNum] = exports.getScriptParameters();
     core_1.globalVariables.execution_expe_dir = current_execution_dir;
-    core_1.globalVariables.reconfigurationName = reconfiguration_name;
-    let assemblyName = "server";
-    if (assembly_type === "dep") {
-        assemblyName = `dep${depNum}`;
+    core_1.globalVariables.reconfigurationName = targetDeployment;
+    let assemblyName = assemblyType;
+    if (scalingNum !== null) {
+        assemblyName += scalingNum.toString();
     }
     try {
         if (!fs.existsSync(current_execution_dir))
@@ -68,37 +66,38 @@ const initializeReconf = (assembly_type) => {
     const logger = core_1.newLogger('pulumi', `${current_execution_dir}/logs/logs_${assemblyName}.txt`);
     logger.info("---------------------------------- Waking up hello everyone ----------------------------------------------------");
     // Initialization timestamp log dir
-    exports.initTimeLogDir("server", current_execution_dir, timestamp_log_file, logger);
+    exports.initTimeLogDir(assemblyName, current_execution_dir, timestamp_log_file, logger);
     // Get location of nodes
     const inventory = YAML.parse(fs.readFileSync(`${current_execution_dir}/inventory.yaml`, "utf-8"));
-    // Set duration timeout (always 30 seconds)
-    // let t = 30000;
-    // if (reconfiguration_name === "update") {
-    // 	t = 300000;
-    // }
-    setTimeout(() => exports.goToSleep(0), duration * 1000);
+    console.log(`inventory: ${JSON.stringify(inventory)}`);
+    console.log(`inventory path: ${current_execution_dir}/inventory.yaml`);
+    core_1.setExitCode(0); // Set default exit code
     // Compute server deployment time
     let installTime;
     let runningTime;
     let updateTime;
-    if (assemblyName === "server") {
-        installTime = exports.computeServerInstallTime(config_file_path, nb_concerto_nodes);
-        runningTime = exports.computeServerRunningTime(config_file_path);
-        updateTime = exports.computeServerUpdateTime(config_file_path, nb_concerto_nodes);
-    }
-    else {
-        installTime = exports.computeDepInstallTime(config_file_path, assemblyName);
-        runningTime = exports.computeDepRunningTime(config_file_path, assemblyName);
-        updateTime = exports.computeDepUpdateTime(config_file_path, assemblyName);
-    }
-    // const deployTime = 20;
+    // if(assemblyName === "server") {
+    // 	installTime = computeServerInstallTime(config_file_path, nbScalingNodes);
+    // 	runningTime = computeServerRunningTime(config_file_path);
+    // 	updateTime = computeServerUpdateTime(config_file_path, nbScalingNodes);
+    // }
+    // else {
+    // 	installTime = computeDepInstallTime(config_file_path, assemblyName);
+    // 	runningTime = computeDepRunningTime(config_file_path, assemblyName);
+    // 	updateTime = computeDepUpdateTime(config_file_path, assemblyName);
+    // }
+    logger.info("script parameters:");
+    logger.info(config_file_path);
+    logger.info(timestamp_log_file);
+    logger.info(current_execution_dir);
+    logger.info(targetDeployment);
+    logger.info(`${nbScalingNodes}`);
+    logger.info(`${scalingNum}`);
+    logger.info("------------");
     return [
-        config_file_path,
-        timestamp_log_file,
-        current_execution_dir,
-        reconfiguration_name,
-        nb_concerto_nodes,
-        depNum,
+        targetDeployment,
+        nbScalingNodes,
+        scalingNum,
         inventory,
         installTime,
         runningTime,
@@ -108,14 +107,14 @@ const initializeReconf = (assembly_type) => {
 };
 exports.initializeReconf = initializeReconf;
 const initTimeLogDir = (assemblyName, current_execution_dir, logDirTimestamp, logger) => {
-    if (!fs.existsSync(current_execution_dir)) {
-        try {
-            fs.mkdirSync(current_execution_dir);
-        }
-        catch (_a) {
-            logger.info(`------ RACE CONDITION HANDLED BY EXCEPTION: FOLDER ${current_execution_dir} WAS ALREADY CREATED`);
-        }
-    }
+    // if(!fs.existsSync(current_execution_dir)) {
+    // 	try {
+    // 		fs.mkdirSync(current_execution_dir);
+    // 	}
+    // 	catch {
+    // 		logger.info(`------ RACE CONDITION HANDLED BY EXCEPTION: FOLDER ${current_execution_dir} WAS ALREADY CREATED`);
+    // 	}
+    // }
     core_1.globalVariables.assemblyName = assemblyName;
     if (logDirTimestamp !== null) {
         core_1.globalVariables.logDirTimestamp = logDirTimestamp;

@@ -14,13 +14,13 @@ const resources_1 = require("@mjuz/core/resources");
 const hareactive_1 = require("@funkia/hareactive");
 const serverInstall_1 = require("../serverInstall");
 const metricAnalysis_1 = require("../metricAnalysis");
-const [config_file_path, timestamp_log_file, current_execution_dir, reconfiguration_name, nb_concerto_nodes, depNum, inventory, installTime, runningTime, updateTime, logger] = metricAnalysis_1.initializeReconf("server");
+const [config_file_path, timestamp_log_file, current_execution_dir, reconfiguration_name, nbScalingNodes, depNum, inventory, installTime, runningTime, updateTime, logger] = metricAnalysis_1.initializeReconf("server");
 logger.info("script parameters:");
 logger.info(config_file_path);
 logger.info(timestamp_log_file);
 logger.info(current_execution_dir);
 logger.info(reconfiguration_name);
-logger.info(`${nb_concerto_nodes}`);
+logger.info(`${nbScalingNodes}`);
 logger.info(`${depNum}`);
 logger.info("------------");
 let deployTimestampRegistered = false;
@@ -43,7 +43,7 @@ const program = () => __awaiter(void 0, void 0, void 0, function* () {
     const installWishes = [];
     const installDepOffers = [];
     let depNum;
-    for (depNum = 0; depNum < nb_concerto_nodes; depNum++) {
+    for (depNum = 0; depNum < nbScalingNodes; depNum++) {
         const depName = `dep${depNum}`;
         const depHost = inventory[depName].split(":")[0];
         let remoteConn = new resources_1.RemoteConnection(depName, { port: 19954 + 2 * depNum, host: depHost });
@@ -66,7 +66,7 @@ const program = () => __awaiter(void 0, void 0, void 0, function* () {
     logger.info(`Server deployTime: ${deployTime}`);
     const runningWishes = [];
     const runningDepsOffers = [];
-    for (depNum = 0; depNum < nb_concerto_nodes; depNum++) {
+    for (depNum = 0; depNum < nbScalingNodes; depNum++) {
         let remoteConn = remoteConns[depNum];
         let depWish = new resources_1.Wish(remoteConn, `dep${depNum}${reconfiguration_name}`, { dependsOn: serverInstallRessource });
         runningWishes.push(depWish);

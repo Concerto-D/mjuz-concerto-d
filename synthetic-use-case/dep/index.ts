@@ -18,7 +18,7 @@ const [
 	timestamp_log_file,
 	current_execution_dir,
 	reconfiguration_name,
-	nb_concerto_nodes,
+	nbScalingNodes,
 	depNum,
 	inventory,
 	installTime,
@@ -33,7 +33,7 @@ logger.info(
 	timestamp_log_file,
 	current_execution_dir,
 	reconfiguration_name,
-	nb_concerto_nodes,
+	nbScalingNodes,
 	depNum
 )
 logger.info("------------")

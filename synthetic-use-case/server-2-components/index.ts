@@ -20,7 +20,7 @@ const [
 	timestamp_log_file,
 	current_execution_dir,
 	reconfiguration_name,
-	nb_concerto_nodes,
+	nbScalingNodes,
 	depNum,
 	inventory,
 	installTime,
@@ -34,7 +34,7 @@ logger.info(config_file_path)
 logger.info(timestamp_log_file)
 logger.info(current_execution_dir)
 logger.info(reconfiguration_name)
-logger.info(`${nb_concerto_nodes}`)
+logger.info(`${nbScalingNodes}`)
 logger.info(`${depNum}`)
 logger.info("------------");
 
@@ -61,7 +61,7 @@ const program = async () => {
 	const installWishes = [];
 	const installDepOffers = [];
 	let depNum: number;
-	for (depNum = 0; depNum < nb_concerto_nodes; depNum++) {
+	for (depNum = 0; depNum < nbScalingNodes; depNum++) {
 		const depName = `dep${depNum}`;
 		const depHost = inventory[depName].split(":")[0];
 		let remoteConn = new RemoteConnection(depName, { port: 19954 + 2*depNum, host: depHost});
@@ -91,7 +91,7 @@ const program = async () => {
 	
 	const runningWishes = [];
 	const runningDepsOffers = [];
-	for (depNum = 0; depNum < nb_concerto_nodes; depNum++) {
+	for (depNum = 0; depNum < nbScalingNodes; depNum++) {
 		let remoteConn = remoteConns[depNum];
 		let depWish = new Wish<DepInstallResource>(remoteConn, `dep${depNum}${reconfiguration_name}`, {dependsOn: serverInstallRessource});
 		runningWishes.push(depWish);

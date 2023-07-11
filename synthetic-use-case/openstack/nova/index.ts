@@ -2,26 +2,55 @@ import {
 	emptyProgram,
 	getStack, newLogger,
 	nextAction,
-	operations,
+	operations, registerTimeValue,
 	runDeployment,
 	sigint,
-	sigquit,
+	sigquit, TimestampPeriod, TimestampType,
 } from '@mjuz/core';
 import {Offer, RemoteConnection, Wish} from '@mjuz/core/resources';
 import { Behavior } from '@funkia/hareactive';
 import {SleepingComponentResource} from "../../sleepingComponent";
+import {goToSleep, initializeReconf} from "../../metricAnalysis";
 
-const logger = newLogger('pulumi');
+const [
+	targetDeployment,
+	nbScalingNodes,
+	scalingNum,
+	inventory,
+	installTime,
+	runningTime,
+	updateTime,
+	logger
+] = initializeReconf("nova")
 
+const compName = `nova${scalingNum}`
+const timestampType = targetDeployment === "deploy" ? TimestampType.DEPLOY : TimestampType.UPDATE
+let timestampRegistered = false;
 const program = async () => {
-	const reconfigurationName = "deploy"
-	const keystoneConnection = new RemoteConnection(`keystone`, { port: 19954, host: "localhost"});
-	// let keystoneResWish = new Wish<SleepingComponentResource>(workerConnection, `keystoneProvide${reconfigurationName}`);
+	// Reconf starts
+	if (!timestampRegistered) {
+		registerTimeValue(timestampType, TimestampPeriod.START);
+		timestampRegistered = true;
+	}
+	
+	// Resolve keystone wish
+	const [keystoneHost, keystonePort] = inventory["keystone0"].split(":")
+	const keystoneConnection = new RemoteConnection(`keystone0`, { port: Number.parseInt(keystonePort), host: keystoneHost});
 	let keystoneResWish = new Wish<SleepingComponentResource>(keystoneConnection, `keystoneProvide`);
+	
+	// Create comp
 	const novaResource = new SleepingComponentResource(
-		`novaRes${reconfigurationName}`,
-		{reconfState: keystoneResWish.offer, timeCreate: 5.0, timeDelete: 3.0, depsOffers: [keystoneResWish.offer]}
+		`${compName}Res${targetDeployment}`,
+		{reconfState: keystoneResWish.offer, timeCreate: 1.0, timeDelete: 3.0, depsOffers: [keystoneResWish.offer]}
 	)
+	
+	novaResource.id.apply(novaResourceId => {
+		if (novaResourceId === targetDeployment) {
+			// Reconf ends
+			goToSleep(50);
+		}
+	})
+	
 	return {
 		novaResourceId: novaResource.id
 	}
@@ -30,15 +59,16 @@ const program = async () => {
 const initStack = getStack(
 	{
 		program: emptyProgram,
-		projectName: `novaProject`,
-		stackName: `novaStack`,
+		projectName: `${compName}Project`,
+		stackName: `${compName}Stack`,
 	},
 	{ workDir: '.' }
 );
 
+const deploymentPort = Number.parseInt(inventory[compName].split(":")[1])
 runDeployment(
 	initStack,
 	operations(Behavior.of(program)),
 	(offerUpdates) => nextAction(offerUpdates, sigquit(), sigint()),
-	{ deploymentName: `nova`, resourcesPort: 19955, deploymentPort: 19956 }
+	{ deploymentName: compName, resourcesPort: deploymentPort-1, deploymentPort: deploymentPort }
 );

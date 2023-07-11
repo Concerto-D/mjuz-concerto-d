@@ -2,59 +2,81 @@ import {
 	emptyProgram,
 	getStack, newLogger,
 	nextAction,
-	operations,
-	runDeployment,
+	operations, registerTimeValue,
+	runDeployment, setExitCode,
 	sigint,
-	sigquit,
+	sigquit, TimestampPeriod, TimestampType,
 } from '@mjuz/core';
 import {Offer, RemoteConnection, Wish} from '@mjuz/core/resources';
 import { Behavior } from '@funkia/hareactive';
 import {SleepingComponentResource} from "../../sleepingComponent";
+import {goToSleep, initializeReconf} from "../../metricAnalysis";
 
-const logger = newLogger('pulumi');
+const [
+	targetDeployment,
+	nbScalingNodes,
+	scalingNum,
+	inventory,
+	installTime,
+	runningTime,
+	updateTime,
+	logger
+] = initializeReconf("keystone")
 
+const compName = `keystone${scalingNum}`;
+const timestampType = targetDeployment === "deploy" ? TimestampType.DEPLOY : TimestampType.UPDATE
+let timestampRegistered = false;
 const program = async () => {
-	const reconfigurationName = "deploy"
-	const novaConnection = new RemoteConnection(`nova`, { port: 19956, host: "localhost"});
-	const neutronConnection = new RemoteConnection(`neutron`, { port: 19958, host: "localhost"});
-	const mariadbmasterConnection = new RemoteConnection(`mariadbmaster`, { port: 19960, host: "localhost"});
-	// let mariadbmasterResWish = new Wish<SleepingComponentResource>(mariadbmasterConnection, `mariadbmasterProvide${reconfigurationName}`);
+	// Reconf starts
+	if (!timestampRegistered) {
+		registerTimeValue(timestampType, TimestampPeriod.START);
+		timestampRegistered = true;
+	}
+	
+	// Resolve mariadbmaster Wish
+	const [mariadbHost, mariadbPort] = inventory["mariadbmaster"].split(":")
+	const mariadbmasterConnection = new RemoteConnection(`mariadbmaster`, { port: Number.parseInt(mariadbPort), host: mariadbHost});
 	let mariadbmasterResWish = new Wish<SleepingComponentResource>(mariadbmasterConnection, `mariadbmasterProvide`);
 	
+	// Create component
 	const keystoneResource = new SleepingComponentResource(
-		`keystoneRes${reconfigurationName}`,
-		{reconfState: mariadbmasterResWish.offer, timeCreate: 7.0, timeDelete: 3.0, depsOffers: [mariadbmasterResWish.offer], idProvide: mariadbmasterResWish.offer}
+		`${compName}Res${targetDeployment}`,
+		{reconfState: mariadbmasterResWish.offer, timeCreate: 5.0, timeDelete: 3.0, depsOffers: [mariadbmasterResWish.offer], idProvide: mariadbmasterResWish.offer}
 	)
-	// new Offer(novaConnection, `keystoneProvide${reconfigurationName}`, keystoneResource)
+	
+	// Provide component with nova and neutron
+	const [novaHost, novaPort] = inventory["nova0"].split(":")
+	const [neutronHost, neutronPort] = inventory["neutron0"].split(":")
+	const novaConnection = new RemoteConnection(`nova0`, { port: Number.parseInt(novaPort), host: novaHost});
+	const neutronConnection = new RemoteConnection(`neutron0`, { port: Number.parseInt(neutronPort), host: neutronHost});
 	new Offer(novaConnection, `keystoneProvide`, keystoneResource)
-	// new Offer(neutronConnection, `keystoneProvide${reconfigurationName}`, keystoneResource)
 	new Offer(neutronConnection, `keystoneProvide`, keystoneResource)
 	
-	mariadbmasterResWish.offer.apply(res => {
-		console.log(`OFFFFFERRRRRR: ${res}`)
-	})
-	keystoneResource.idProvide?.apply(res => {
-		console.log(`ID POROOOOOOOVIDE: ${res}`)
+	keystoneResource.id.apply(keystoneResourceId => {
+		if (keystoneResourceId === targetDeployment) {
+			// Reconf ends
+			goToSleep(50);
+		}
 	})
 	
 	return {
-		keystoneResourceId: keystoneResource.id,
-		keystoneResourceIdProvide: keystoneResource.idProvide
+		keystoneResourceId: keystoneResource.id
 	}
 };
 
 const initStack = getStack(
 	{
 		program: emptyProgram,
-		projectName: `keystoneProject`,
-		stackName: `keystoneStack`,
+		projectName: `${compName}Project`,
+		stackName: `${compName}Stack`,
 	},
 	{ workDir: '.' }
 );
 
+const deploymentPort = Number.parseInt(inventory[compName].split(":")[1])
 runDeployment(
 	initStack,
 	operations(Behavior.of(program)),
 	(offerUpdates) => nextAction(offerUpdates, sigquit(), sigint()),
-	{ deploymentName: `keystone`, resourcesPort: 19953, deploymentPort: 19954 }
+	{ deploymentName: compName, resourcesPort: deploymentPort-1, deploymentPort: deploymentPort }
 );
