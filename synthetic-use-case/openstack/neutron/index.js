@@ -26,9 +26,9 @@ const program = () => __awaiter(void 0, void 0, void 0, function* () {
         timestampRegistered = true;
     }
     // Resolve keystone wish
-    const [keystoneHost, keystonePort] = inventory["keystone0"].split(":");
-    const keystoneConnection = new resources_1.RemoteConnection(`keystone0`, { port: Number.parseInt(keystonePort), host: keystoneHost });
-    let keystoneResWish = new resources_1.Wish(keystoneConnection, `keystoneProvide`);
+    const [workerHost, workerPort] = inventory["worker0"].split(":");
+    const workerConnection = new resources_1.RemoteConnection(`worker0`, { port: Number.parseInt(workerPort), host: workerHost });
+    let keystoneResWish = new resources_1.Wish(workerConnection, `keystoneProvide`);
     // Create component
     const neutronResource = new sleepingComponent_1.SleepingComponentResource(`${compName}Res${targetDeployment}`, { reconfState: keystoneResWish.offer, timeCreate: 2.0, timeDelete: 3.0, depsOffers: [keystoneResWish.offer] });
     neutronResource.id.apply(neutronResourceId => {

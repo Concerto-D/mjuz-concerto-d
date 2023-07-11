@@ -21,9 +21,9 @@ const [
 	runningTime,
 	updateTime,
 	logger
-] = initializeReconf("keystone")
+] = initializeReconf("worker")
 
-const compName = `keystone${scalingNum}`;
+const compName = `worker${scalingNum}`;
 const timestampType = targetDeployment === "deploy" ? TimestampType.DEPLOY : TimestampType.UPDATE
 let timestampRegistered = false;
 const program = async () => {

@@ -35,9 +35,9 @@ const program = async () => {
 	}
 	
 	// Resolve keystone wish
-	const [keystoneHost, keystonePort] = inventory["keystone0"].split(":")
-	const keystoneConnection = new RemoteConnection(`keystone0`, { port: Number.parseInt(keystonePort), host: keystoneHost});
-	let keystoneResWish = new Wish<SleepingComponentResource>(keystoneConnection, `keystoneProvide`);
+	const [workerHost, workerPort] = inventory["worker0"].split(":")
+	const workerConnection = new RemoteConnection(`worker0`, { port: Number.parseInt(workerPort), host: workerHost});
+	let keystoneResWish = new Wish<SleepingComponentResource>(workerConnection, `keystoneProvide`);
 	
 	// Create comp
 	const novaResource = new SleepingComponentResource(

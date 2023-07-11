@@ -41,10 +41,10 @@ const program = async () => {
 		{reconfState: targetDeployment, timeCreate: 7.0, timeDelete: 3.0, depsOffers: []}
 	)
 	
-	// Provide component to keystone
-	const [keystoneHost, keystonePort] = inventory["keystone0"].split(":")
-	const keystoneConnection = new RemoteConnection(`keystone0`, { port: Number.parseInt(keystonePort), host: keystoneHost});
-	new Offer(keystoneConnection, `${compName}Provide`, mariadbmasterResource)
+	// Provide component to worker
+	const [workerHost, workerPort] = inventory["worker0"].split(":")
+	const workerConnection = new RemoteConnection(`worker0`, { port: Number.parseInt(workerPort), host: workerHost});
+	new Offer(workerConnection, `${compName}Provide`, mariadbmasterResource)
 	
 	mariadbmasterResource.id.apply(mariadbmasterResourceId => {
 		if (mariadbmasterResourceId === targetDeployment) {
