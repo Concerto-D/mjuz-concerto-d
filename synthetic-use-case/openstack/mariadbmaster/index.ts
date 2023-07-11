@@ -29,6 +29,7 @@ const timestampType = targetDeployment === "deploy" ? TimestampType.DEPLOY : Tim
 
 let timestampRegistered = false;
 const program = async () => {
+	logger.info("Reconf starts");
 	if (!timestampRegistered) {
 		registerTimeValue(timestampType, TimestampPeriod.START);
 		timestampRegistered = true;

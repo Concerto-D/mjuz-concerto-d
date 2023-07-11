@@ -27,6 +27,7 @@ const compName = `nova${scalingNum}`
 const timestampType = targetDeployment === "deploy" ? TimestampType.DEPLOY : TimestampType.UPDATE
 let timestampRegistered = false;
 const program = async () => {
+	logger.info("Reconf starts");
 	// Reconf starts
 	if (!timestampRegistered) {
 		registerTimeValue(timestampType, TimestampPeriod.START);

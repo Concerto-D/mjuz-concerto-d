@@ -46,7 +46,7 @@ const getScriptParameters = () => {
 };
 exports.getScriptParameters = getScriptParameters;
 const initializeReconf = (assemblyType) => {
-    const [config_file_path, _, timestamp_log_file, current_execution_dir, targetDeployment, nbScalingNodes, scalingNum] = exports.getScriptParameters();
+    const [config_file_path, duration, timestamp_log_file, current_execution_dir, targetDeployment, nbScalingNodes, scalingNum] = exports.getScriptParameters();
     core_1.globalVariables.execution_expe_dir = current_execution_dir;
     core_1.globalVariables.reconfigurationName = targetDeployment;
     let assemblyName = assemblyType;
@@ -69,8 +69,6 @@ const initializeReconf = (assemblyType) => {
     exports.initTimeLogDir(assemblyName, current_execution_dir, timestamp_log_file, logger);
     // Get location of nodes
     const inventory = YAML.parse(fs.readFileSync(`${current_execution_dir}/inventory.yaml`, "utf-8"));
-    console.log(`inventory: ${JSON.stringify(inventory)}`);
-    console.log(`inventory path: ${current_execution_dir}/inventory.yaml`);
     core_1.setExitCode(0); // Set default exit code
     // Compute server deployment time
     let installTime;

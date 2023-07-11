@@ -19,6 +19,7 @@ const [targetDeployment, nbScalingNodes, scalingNum, inventory, installTime, run
 const timestampType = targetDeployment === "deploy" ? core_1.TimestampType.DEPLOY : core_1.TimestampType.UPDATE;
 let timestampRegistered = false;
 const program = () => __awaiter(void 0, void 0, void 0, function* () {
+    logger.info("Reconf starts");
     if (!timestampRegistered) {
         core_1.registerTimeValue(timestampType, core_1.TimestampPeriod.START);
         timestampRegistered = true;
