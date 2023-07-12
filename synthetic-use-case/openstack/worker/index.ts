@@ -11,6 +11,7 @@ import {Offer, RemoteConnection, Wish} from '@mjuz/core/resources';
 import { Behavior } from '@funkia/hareactive';
 import {SleepingComponentResource} from "../../sleepingComponent";
 import {goToSleep, initializeReconf} from "../../metricAnalysis";
+import * as pulumi from "@pulumi/pulumi"
 
 const [
 	targetDeployment,
@@ -34,31 +35,53 @@ const program = async () => {
 		timestampRegistered = true;
 	}
 	
-	// Resolve mariadbmaster Wish
+	/* RemoteConnection with mariadbmaster, nova and neutron */
 	const [mariadbHost, mariadbPort] = inventory["mariadbmaster"].split(":")
+	const [novaHost, novaPort] = inventory["nova0"].split(":")
+	const [neutronHost, neutronPort] = inventory["neutron0"].split(":")
 	const mariadbmasterConnection = new RemoteConnection(`mariadbmaster`, { port: Number.parseInt(mariadbPort), host: mariadbHost});
+	const novaConnection = new RemoteConnection(`nova0`, { port: Number.parseInt(novaPort), host: novaHost});
+	const neutronConnection = new RemoteConnection(`neutron0`, { port: Number.parseInt(neutronPort), host: neutronHost});
+	
+	/* mariadbworker */
+	// Resolve mariadbmaster Wish
 	let mariadbmasterResWish = new Wish<SleepingComponentResource>(mariadbmasterConnection, `mariadbmasterProvide`);
 	
 	// Create component
-	const keystoneResource = new SleepingComponentResource(
-		`${compName}Res${targetDeployment}`,
-		{reconfState: mariadbmasterResWish.offer, timeCreate: 5.0, timeDelete: 3.0, depsOffers: [mariadbmasterResWish.offer], idProvide: mariadbmasterResWish.offer}
+	const mariadbworkerResource = new SleepingComponentResource(
+		`mariadbworkerRes`,
+		{reconfState: mariadbmasterResWish.offer, timeCreate: 10.0, timeDelete: 3.0, depsOffers: [mariadbmasterResWish.offer]}
 	)
 	
-	// Provide component with nova and neutron
-	const [novaHost, novaPort] = inventory["nova0"].split(":")
-	const [neutronHost, neutronPort] = inventory["neutron0"].split(":")
-	const novaConnection = new RemoteConnection(`nova0`, { port: Number.parseInt(novaPort), host: novaHost});
-	const neutronConnection = new RemoteConnection(`neutron0`, { port: Number.parseInt(neutronPort), host: neutronHost});
-	new Offer(novaConnection, `keystoneProvide`, keystoneResource)
-	new Offer(neutronConnection, `keystoneProvide`, keystoneResource)
+	// Provide mariadbworker to nova and neutron
+	new Offer(novaConnection, `mariadbworker${scalingNum}Provide`, mariadbworkerResource)
+	new Offer(neutronConnection, `mariadbworker${scalingNum}Provide`, mariadbworkerResource)
 	
-	keystoneResource.id.apply(keystoneResourceId => {
-		if (keystoneResourceId === targetDeployment) {
-			// Reconf ends
-			goToSleep(50);
-		}
-	})
+	/* keystone */
+	// Create component
+	const keystoneResource = new SleepingComponentResource(
+		`keystoneRes`,
+		{reconfState: mariadbworkerResource.reconfState, timeCreate: 10.0, timeDelete: 3.0, depsOffers: []},
+		{dependsOn: mariadbworkerResource}
+	)
+	
+	// Provide keystone to nova and neutron
+	new Offer(novaConnection, `keystone${scalingNum}Provide`, keystoneResource)
+	new Offer(neutronConnection, `keystone${scalingNum}Provide`, keystoneResource)
+	
+	/* glance */
+	const glanceResource = new SleepingComponentResource(
+		`glanceRes`,
+		{reconfState: keystoneResource.reconfState, timeCreate: 10.0, timeDelete: 3.0, depsOffers: []},
+		{dependsOn: [mariadbworkerResource, keystoneResource]}
+	)
+	
+	pulumi.all([mariadbworkerResource.id, keystoneResource.id, glanceResource.id])
+		.apply(([workerId, keystoneId, glanceId]) => {
+			if(workerId == targetDeployment && keystoneId === targetDeployment && glanceId === targetDeployment) {
+				goToSleep(50)
+			}
+		})
 	
 	return {
 		keystoneResourceId: keystoneResource.id

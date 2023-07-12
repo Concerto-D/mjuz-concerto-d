@@ -25,7 +25,7 @@ const program = () => __awaiter(void 0, void 0, void 0, function* () {
         timestampRegistered = true;
     }
     // Create component
-    const mariadbmasterResource = new sleepingComponent_1.SleepingComponentResource(`${compName}Res${targetDeployment}`, { reconfState: targetDeployment, timeCreate: 7.0, timeDelete: 3.0, depsOffers: [] });
+    const mariadbmasterResource = new sleepingComponent_1.SleepingComponentResource(`${compName}Res`, { reconfState: targetDeployment, timeCreate: 7.0, timeDelete: 3.0, depsOffers: [] });
     // Provide component to worker
     const [workerHost, workerPort] = inventory["worker0"].split(":");
     const workerConnection = new resources_1.RemoteConnection(`worker0`, { port: Number.parseInt(workerPort), host: workerHost });

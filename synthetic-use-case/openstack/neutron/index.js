@@ -28,9 +28,10 @@ const program = () => __awaiter(void 0, void 0, void 0, function* () {
     // Resolve keystone wish
     const [workerHost, workerPort] = inventory["worker0"].split(":");
     const workerConnection = new resources_1.RemoteConnection(`worker0`, { port: Number.parseInt(workerPort), host: workerHost });
-    let keystoneResWish = new resources_1.Wish(workerConnection, `keystoneProvide`);
+    let mariadbworkerResWish = new resources_1.Wish(workerConnection, `mariadbworker${scalingNum}Provide`);
+    let keystoneResWish = new resources_1.Wish(workerConnection, `keystone${scalingNum}Provide`);
     // Create component
-    const neutronResource = new sleepingComponent_1.SleepingComponentResource(`${compName}Res${targetDeployment}`, { reconfState: keystoneResWish.offer, timeCreate: 2.0, timeDelete: 3.0, depsOffers: [keystoneResWish.offer] });
+    const neutronResource = new sleepingComponent_1.SleepingComponentResource(`${compName}Res`, { reconfState: keystoneResWish.offer, timeCreate: 10.0, timeDelete: 5.0, depsOffers: [mariadbworkerResWish.offer, keystoneResWish.offer] });
     neutronResource.id.apply(neutronResourceId => {
         if (neutronResourceId === targetDeployment) {
             // Reconf ends

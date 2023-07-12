@@ -37,12 +37,13 @@ const program = async () => {
 	// Resolve keystone wish
 	const [workerHost, workerPort] = inventory["worker0"].split(":")
 	const workerConnection = new RemoteConnection(`worker0`, { port: Number.parseInt(workerPort), host: workerHost});
-	let keystoneResWish = new Wish<SleepingComponentResource>(workerConnection, `keystoneProvide`);
+	let mariadbworkerResWish = new Wish<SleepingComponentResource>(workerConnection, `mariadbworker${scalingNum}Provide`);
+	let keystoneResWish = new Wish<SleepingComponentResource>(workerConnection, `keystone${scalingNum}Provide`);
 	
 	// Create component
 	const neutronResource = new SleepingComponentResource(
-		`${compName}Res${targetDeployment}`,
-		{reconfState: keystoneResWish.offer, timeCreate: 2.0, timeDelete: 3.0, depsOffers: [keystoneResWish.offer]}
+		`${compName}Res`,
+		{reconfState: keystoneResWish.offer, timeCreate: 10.0, timeDelete: 5.0, depsOffers: [mariadbworkerResWish.offer, keystoneResWish.offer]}
 	)
 	
 	neutronResource.id.apply(neutronResourceId => {

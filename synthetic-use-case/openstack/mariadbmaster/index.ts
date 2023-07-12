@@ -37,7 +37,7 @@ const program = async () => {
 	
 	// Create component
 	const mariadbmasterResource = new SleepingComponentResource(
-		`${compName}Res${targetDeployment}`,
+		`${compName}Res`,
 		{reconfState: targetDeployment, timeCreate: 7.0, timeDelete: 3.0, depsOffers: []}
 	)
 	

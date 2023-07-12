@@ -41,7 +41,7 @@ class SleepingComponentProvider {
             const changed = news.reconfChanged;
             return {
                 changes: changed,
-                replaces: ["reconfState", "idProvide"],
+                replaces: ["reconfState"],
                 deleteBeforeReplace: true
             };
         });

@@ -29,7 +29,7 @@ export class SleepingComponentProvider implements dynamic.ResourceProvider {
 
 		return {
 			changes: changed,
-			replaces: ["reconfState", "idProvide"],
+			replaces: ["reconfState"],
 			deleteBeforeReplace: true
 		}
 	}
@@ -58,7 +58,6 @@ export class SleepingComponentResource extends dynamic.Resource {
 	public readonly timeCreate!: Output<number>;
 	public readonly timeDelete!: Output<number>;
 	public readonly depsOffers!: Output<any>;
-	public readonly idProvide: Output<any> | undefined;
 	
 	constructor(name: string, props: any, opts?: any) {
 		super(new SleepingComponentProvider(), name, props, opts);

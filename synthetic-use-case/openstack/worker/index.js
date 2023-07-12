@@ -1,4 +1,23 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -14,6 +33,7 @@ const resources_1 = require("@mjuz/core/resources");
 const hareactive_1 = require("@funkia/hareactive");
 const sleepingComponent_1 = require("../../sleepingComponent");
 const metricAnalysis_1 = require("../../metricAnalysis");
+const pulumi = __importStar(require("@pulumi/pulumi"));
 const [targetDeployment, nbScalingNodes, scalingNum, inventory, installTime, runningTime, updateTime, logger] = metricAnalysis_1.initializeReconf("worker");
 const compName = `worker${scalingNum}`;
 const timestampType = targetDeployment === "deploy" ? core_1.TimestampType.DEPLOY : core_1.TimestampType.UPDATE;
@@ -25,22 +45,32 @@ const program = () => __awaiter(void 0, void 0, void 0, function* () {
         core_1.registerTimeValue(timestampType, core_1.TimestampPeriod.START);
         timestampRegistered = true;
     }
-    // Resolve mariadbmaster Wish
+    /* RemoteConnection with mariadbmaster, nova and neutron */
     const [mariadbHost, mariadbPort] = inventory["mariadbmaster"].split(":");
-    const mariadbmasterConnection = new resources_1.RemoteConnection(`mariadbmaster`, { port: Number.parseInt(mariadbPort), host: mariadbHost });
-    let mariadbmasterResWish = new resources_1.Wish(mariadbmasterConnection, `mariadbmasterProvide`);
-    // Create component
-    const keystoneResource = new sleepingComponent_1.SleepingComponentResource(`${compName}Res${targetDeployment}`, { reconfState: mariadbmasterResWish.offer, timeCreate: 5.0, timeDelete: 3.0, depsOffers: [mariadbmasterResWish.offer], idProvide: mariadbmasterResWish.offer });
-    // Provide component with nova and neutron
     const [novaHost, novaPort] = inventory["nova0"].split(":");
     const [neutronHost, neutronPort] = inventory["neutron0"].split(":");
+    const mariadbmasterConnection = new resources_1.RemoteConnection(`mariadbmaster`, { port: Number.parseInt(mariadbPort), host: mariadbHost });
     const novaConnection = new resources_1.RemoteConnection(`nova0`, { port: Number.parseInt(novaPort), host: novaHost });
     const neutronConnection = new resources_1.RemoteConnection(`neutron0`, { port: Number.parseInt(neutronPort), host: neutronHost });
-    new resources_1.Offer(novaConnection, `keystoneProvide`, keystoneResource);
-    new resources_1.Offer(neutronConnection, `keystoneProvide`, keystoneResource);
-    keystoneResource.id.apply(keystoneResourceId => {
-        if (keystoneResourceId === targetDeployment) {
-            // Reconf ends
+    /* mariadbworker */
+    // Resolve mariadbmaster Wish
+    let mariadbmasterResWish = new resources_1.Wish(mariadbmasterConnection, `mariadbmasterProvide`);
+    // Create component
+    const mariadbworkerResource = new sleepingComponent_1.SleepingComponentResource(`mariadbworkerRes`, { reconfState: mariadbmasterResWish.offer, timeCreate: 10.0, timeDelete: 3.0, depsOffers: [] });
+    // Provide mariadbworker to nova and neutron
+    new resources_1.Offer(novaConnection, `mariadbworker${scalingNum}Provide`, mariadbworkerResource);
+    new resources_1.Offer(neutronConnection, `mariadbworker${scalingNum}Provide`, mariadbworkerResource);
+    /* keystone */
+    // Create component
+    const keystoneResource = new sleepingComponent_1.SleepingComponentResource(`keystoneRes`, { reconfState: mariadbworkerResource.reconfState, timeCreate: 10.0, timeDelete: 3.0, depsOffers: [] }, { dependsOn: mariadbworkerResource });
+    // Provide keystone to nova and neutron
+    new resources_1.Offer(novaConnection, `keystone${scalingNum}Provide`, keystoneResource);
+    new resources_1.Offer(neutronConnection, `keystone${scalingNum}Provide`, keystoneResource);
+    /* glance */
+    const glanceResource = new sleepingComponent_1.SleepingComponentResource(`glanceRes`, { reconfState: keystoneResource.reconfState, timeCreate: 10.0, timeDelete: 3.0, depsOffers: [] }, { dependsOn: [mariadbworkerResource, keystoneResource] });
+    pulumi.all([mariadbworkerResource.id, keystoneResource.id, glanceResource.id])
+        .apply(([workerId, keystoneId, glanceId]) => {
+        if (workerId == targetDeployment && keystoneId === targetDeployment && glanceId === targetDeployment) {
             metricAnalysis_1.goToSleep(50);
         }
     });
