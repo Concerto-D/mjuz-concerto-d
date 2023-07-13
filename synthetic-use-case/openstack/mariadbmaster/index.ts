@@ -41,10 +41,14 @@ const program = async () => {
 		{reconfState: targetDeployment, timeCreate: 7.0, timeDelete: 3.0, depsOffers: []}
 	)
 	
+	const offerList = [];
 	// Provide component to worker
-	const [workerHost, workerPort] = inventory["worker0"].split(":")
-	const workerConnection = new RemoteConnection(`worker0`, { port: Number.parseInt(workerPort), host: workerHost});
-	new Offer(workerConnection, `${compName}Provide`, mariadbmasterResource)
+	for(let i = 0; i < nbScalingNodes; i++) {
+		const [workerHost, workerPort] = inventory[`worker${i}`].split(":");
+		const workerConnection = new RemoteConnection(`worker${i}`, {port: Number.parseInt(workerPort), host: workerHost});
+		const offer = new Offer(workerConnection, `${compName}Provide`, mariadbmasterResource);
+		offerList.push(offer);
+	}
 	
 	mariadbmasterResource.id.apply(mariadbmasterResourceId => {
 		if (mariadbmasterResourceId === targetDeployment) {

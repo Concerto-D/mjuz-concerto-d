@@ -26,8 +26,8 @@ const program = () => __awaiter(void 0, void 0, void 0, function* () {
         timestampRegistered = true;
     }
     // Resolve keystone wish
-    const [workerHost, workerPort] = inventory["worker0"].split(":");
-    const workerConnection = new resources_1.RemoteConnection(`worker0`, { port: Number.parseInt(workerPort), host: workerHost });
+    const [workerHost, workerPort] = inventory[`worker${scalingNum}`].split(":");
+    const workerConnection = new resources_1.RemoteConnection(`worker${scalingNum}`, { port: Number.parseInt(workerPort), host: workerHost });
     let mariadbworkerResWish = new resources_1.Wish(workerConnection, `mariadbworker${scalingNum}Provide`);
     let keystoneResWish = new resources_1.Wish(workerConnection, `keystone${scalingNum}Provide`);
     // Create component

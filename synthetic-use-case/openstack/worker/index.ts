@@ -37,11 +37,11 @@ const program = async () => {
 	
 	/* RemoteConnection with mariadbmaster, nova and neutron */
 	const [mariadbHost, mariadbPort] = inventory["mariadbmaster"].split(":")
-	const [novaHost, novaPort] = inventory["nova0"].split(":")
-	const [neutronHost, neutronPort] = inventory["neutron0"].split(":")
+	const [novaHost, novaPort] = inventory[`nova${scalingNum}`].split(":")
+	const [neutronHost, neutronPort] = inventory[`neutron${scalingNum}`].split(":")
 	const mariadbmasterConnection = new RemoteConnection(`mariadbmaster`, { port: Number.parseInt(mariadbPort), host: mariadbHost});
-	const novaConnection = new RemoteConnection(`nova0`, { port: Number.parseInt(novaPort), host: novaHost});
-	const neutronConnection = new RemoteConnection(`neutron0`, { port: Number.parseInt(neutronPort), host: neutronHost});
+	const novaConnection = new RemoteConnection(`nova${scalingNum}`, { port: Number.parseInt(novaPort), host: novaHost});
+	const neutronConnection = new RemoteConnection(`neutron${scalingNum}`, { port: Number.parseInt(neutronPort), host: neutronHost});
 	
 	/* mariadbworker */
 	// Resolve mariadbmaster Wish

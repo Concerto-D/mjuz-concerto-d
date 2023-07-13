@@ -35,8 +35,8 @@ const program = async () => {
 	}
 	
 	// Resolve keystone wish
-	const [workerHost, workerPort] = inventory["worker0"].split(":")
-	const workerConnection = new RemoteConnection(`worker0`, { port: Number.parseInt(workerPort), host: workerHost});
+	const [workerHost, workerPort] = inventory[`worker${scalingNum}`].split(":")
+	const workerConnection = new RemoteConnection(`worker${scalingNum}`, { port: Number.parseInt(workerPort), host: workerHost});
 	let mariadbworkerResWish = new Wish<SleepingComponentResource>(workerConnection, `mariadbworker${scalingNum}Provide`);
 	let keystoneResWish = new Wish<SleepingComponentResource>(workerConnection, `keystone${scalingNum}Provide`);
 	

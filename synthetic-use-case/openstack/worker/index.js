@@ -47,16 +47,16 @@ const program = () => __awaiter(void 0, void 0, void 0, function* () {
     }
     /* RemoteConnection with mariadbmaster, nova and neutron */
     const [mariadbHost, mariadbPort] = inventory["mariadbmaster"].split(":");
-    const [novaHost, novaPort] = inventory["nova0"].split(":");
-    const [neutronHost, neutronPort] = inventory["neutron0"].split(":");
+    const [novaHost, novaPort] = inventory[`nova${scalingNum}`].split(":");
+    const [neutronHost, neutronPort] = inventory[`neutron${scalingNum}`].split(":");
     const mariadbmasterConnection = new resources_1.RemoteConnection(`mariadbmaster`, { port: Number.parseInt(mariadbPort), host: mariadbHost });
-    const novaConnection = new resources_1.RemoteConnection(`nova0`, { port: Number.parseInt(novaPort), host: novaHost });
-    const neutronConnection = new resources_1.RemoteConnection(`neutron0`, { port: Number.parseInt(neutronPort), host: neutronHost });
+    const novaConnection = new resources_1.RemoteConnection(`nova${scalingNum}`, { port: Number.parseInt(novaPort), host: novaHost });
+    const neutronConnection = new resources_1.RemoteConnection(`neutron${scalingNum}`, { port: Number.parseInt(neutronPort), host: neutronHost });
     /* mariadbworker */
     // Resolve mariadbmaster Wish
     let mariadbmasterResWish = new resources_1.Wish(mariadbmasterConnection, `mariadbmasterProvide`);
     // Create component
-    const mariadbworkerResource = new sleepingComponent_1.SleepingComponentResource(`mariadbworkerRes`, { reconfState: mariadbmasterResWish.offer, timeCreate: 10.0, timeDelete: 3.0, depsOffers: [] });
+    const mariadbworkerResource = new sleepingComponent_1.SleepingComponentResource(`mariadbworkerRes`, { reconfState: mariadbmasterResWish.offer, timeCreate: 10.0, timeDelete: 3.0, depsOffers: [mariadbmasterResWish.offer] });
     // Provide mariadbworker to nova and neutron
     new resources_1.Offer(novaConnection, `mariadbworker${scalingNum}Provide`, mariadbworkerResource);
     new resources_1.Offer(neutronConnection, `mariadbworker${scalingNum}Provide`, mariadbworkerResource);

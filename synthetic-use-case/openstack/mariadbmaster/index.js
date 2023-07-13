@@ -26,10 +26,14 @@ const program = () => __awaiter(void 0, void 0, void 0, function* () {
     }
     // Create component
     const mariadbmasterResource = new sleepingComponent_1.SleepingComponentResource(`${compName}Res`, { reconfState: targetDeployment, timeCreate: 7.0, timeDelete: 3.0, depsOffers: [] });
+    const offerList = [];
     // Provide component to worker
-    const [workerHost, workerPort] = inventory["worker0"].split(":");
-    const workerConnection = new resources_1.RemoteConnection(`worker0`, { port: Number.parseInt(workerPort), host: workerHost });
-    new resources_1.Offer(workerConnection, `${compName}Provide`, mariadbmasterResource);
+    for (let i = 0; i < nbScalingNodes; i++) {
+        const [workerHost, workerPort] = inventory[`worker${i}`].split(":");
+        const workerConnection = new resources_1.RemoteConnection(`worker${i}`, { port: Number.parseInt(workerPort), host: workerHost });
+        const offer = new resources_1.Offer(workerConnection, `${compName}Provide`, mariadbmasterResource);
+        offerList.push(offer);
+    }
     mariadbmasterResource.id.apply(mariadbmasterResourceId => {
         if (mariadbmasterResourceId === targetDeployment) {
             metricAnalysis_1.goToSleep(50);
