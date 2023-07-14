@@ -16,9 +16,7 @@ const newLogger = (name, logFileName = '') => {
                 translateTime: true,
             },
             level: 'info',
-        }
-        // Pino.destination(logFileName)
-        );
+        }, pino_1.default.destination(logFileName));
     }
     const logger = rootLogger.child({ c: name });
     process.on('uncaughtException', (err) => {
