@@ -164,8 +164,7 @@ const computeOpenstackCreateTime = (tt_ass, assemblyName, scalingNum) => {
                 + tt_ass[assemblyName]["ready0"]
                 + tt_ass[assemblyName]["ready1"]
                 + tt_ass[assemblyName]["start"]
-                + tt_ass[assemblyName]["deploy"]
-                + tt_ass[assemblyName]["cell_setup"])
+                + tt_ass[assemblyName]["deploy"])
         };
     }
     else if (assemblyName.includes("neutron")) {
