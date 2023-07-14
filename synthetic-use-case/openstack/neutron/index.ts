@@ -17,8 +17,8 @@ const [
 	nbScalingNodes,
 	scalingNum,
 	inventory,
-	installTime,
-	runningTime,
+	createTime,
+	deleteTime,
 	updateTime,
 	logger
 ] = initializeReconf("neutron")
@@ -43,7 +43,7 @@ const program = async () => {
 	// Create component
 	const neutronResource = new SleepingComponentResource(
 		`${compName}Res`,
-		{reconfState: keystoneResWish.offer, timeCreate: 10.0, timeDelete: 5.0, depsOffers: [mariadbworkerResWish.offer, keystoneResWish.offer]}
+		{reconfState: keystoneResWish.offer, timeCreate: createTime["neutron"], timeDelete: deleteTime["neutron"], depsOffers: [mariadbworkerResWish.offer, keystoneResWish.offer]}
 	)
 	
 	neutronResource.id.apply(neutronResourceId => {

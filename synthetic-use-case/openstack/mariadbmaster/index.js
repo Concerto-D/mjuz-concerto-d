@@ -15,7 +15,7 @@ const hareactive_1 = require("@funkia/hareactive");
 const sleepingComponent_1 = require("../../sleepingComponent");
 const metricAnalysis_1 = require("../../metricAnalysis");
 const compName = "mariadbmaster";
-const [targetDeployment, nbScalingNodes, scalingNum, inventory, installTime, runningTime, updateTime, logger] = metricAnalysis_1.initializeReconf(compName);
+const [targetDeployment, nbScalingNodes, scalingNum, inventory, createTime, deleteTime, updateTime, logger] = metricAnalysis_1.initializeReconf(compName);
 const timestampType = targetDeployment === "deploy" ? core_1.TimestampType.DEPLOY : core_1.TimestampType.UPDATE;
 let timestampRegistered = false;
 const program = () => __awaiter(void 0, void 0, void 0, function* () {
@@ -25,7 +25,7 @@ const program = () => __awaiter(void 0, void 0, void 0, function* () {
         timestampRegistered = true;
     }
     // Create component
-    const mariadbmasterResource = new sleepingComponent_1.SleepingComponentResource(`${compName}Res`, { reconfState: targetDeployment, timeCreate: 7.0, timeDelete: 3.0, depsOffers: [] });
+    const mariadbmasterResource = new sleepingComponent_1.SleepingComponentResource(`${compName}Res`, { reconfState: targetDeployment, timeCreate: createTime["mariadbmaster"], timeDelete: deleteTime["mariadbmaster"], depsOffers: [] });
     const offerList = [];
     // Provide component to worker
     for (let i = 0; i < nbScalingNodes; i++) {

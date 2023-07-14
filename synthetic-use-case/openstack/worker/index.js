@@ -34,7 +34,7 @@ const hareactive_1 = require("@funkia/hareactive");
 const sleepingComponent_1 = require("../../sleepingComponent");
 const metricAnalysis_1 = require("../../metricAnalysis");
 const pulumi = __importStar(require("@pulumi/pulumi"));
-const [targetDeployment, nbScalingNodes, scalingNum, inventory, installTime, runningTime, updateTime, logger] = metricAnalysis_1.initializeReconf("worker");
+const [targetDeployment, nbScalingNodes, scalingNum, inventory, createTime, deleteTime, updateTime, logger] = metricAnalysis_1.initializeReconf("worker");
 const compName = `worker${scalingNum}`;
 const timestampType = targetDeployment === "deploy" ? core_1.TimestampType.DEPLOY : core_1.TimestampType.UPDATE;
 let timestampRegistered = false;
@@ -56,18 +56,18 @@ const program = () => __awaiter(void 0, void 0, void 0, function* () {
     // Resolve mariadbmaster Wish
     let mariadbmasterResWish = new resources_1.Wish(mariadbmasterConnection, `mariadbmasterProvide`);
     // Create component
-    const mariadbworkerResource = new sleepingComponent_1.SleepingComponentResource(`mariadbworkerRes`, { reconfState: mariadbmasterResWish.offer, timeCreate: 10.0, timeDelete: 3.0, depsOffers: [mariadbmasterResWish.offer] });
+    const mariadbworkerResource = new sleepingComponent_1.SleepingComponentResource(`mariadbworkerRes`, { reconfState: mariadbmasterResWish.offer, timeCreate: createTime["mariadbworker"], timeDelete: deleteTime["mariadbworker"], depsOffers: [mariadbmasterResWish.offer] });
     // Provide mariadbworker to nova and neutron
     new resources_1.Offer(novaConnection, `mariadbworker${scalingNum}Provide`, mariadbworkerResource);
     new resources_1.Offer(neutronConnection, `mariadbworker${scalingNum}Provide`, mariadbworkerResource);
     /* keystone */
     // Create component
-    const keystoneResource = new sleepingComponent_1.SleepingComponentResource(`keystoneRes`, { reconfState: mariadbworkerResource.reconfState, timeCreate: 10.0, timeDelete: 3.0, depsOffers: [] }, { dependsOn: mariadbworkerResource });
+    const keystoneResource = new sleepingComponent_1.SleepingComponentResource(`keystoneRes`, { reconfState: mariadbworkerResource.reconfState, timeCreate: createTime["keystone"], timeDelete: deleteTime["keystone"], depsOffers: [] }, { dependsOn: mariadbworkerResource });
     // Provide keystone to nova and neutron
     new resources_1.Offer(novaConnection, `keystone${scalingNum}Provide`, keystoneResource);
     new resources_1.Offer(neutronConnection, `keystone${scalingNum}Provide`, keystoneResource);
     /* glance */
-    const glanceResource = new sleepingComponent_1.SleepingComponentResource(`glanceRes`, { reconfState: keystoneResource.reconfState, timeCreate: 10.0, timeDelete: 3.0, depsOffers: [] }, { dependsOn: [mariadbworkerResource, keystoneResource] });
+    const glanceResource = new sleepingComponent_1.SleepingComponentResource(`glanceRes`, { reconfState: keystoneResource.reconfState, timeCreate: createTime["glance"], timeDelete: deleteTime["glance"], depsOffers: [] }, { dependsOn: [mariadbworkerResource, keystoneResource] });
     pulumi.all([mariadbworkerResource.id, keystoneResource.id, glanceResource.id])
         .apply(([workerId, keystoneId, glanceId]) => {
         if (workerId == targetDeployment && keystoneId === targetDeployment && glanceId === targetDeployment) {

@@ -18,8 +18,8 @@ const [
 	nbScalingNodes,
 	scalingNum,
 	inventory,
-	installTime,
-	runningTime,
+	createTime,
+	deleteTime,
 	updateTime,
 	logger
 ] = initializeReconf("worker")
@@ -50,7 +50,7 @@ const program = async () => {
 	// Create component
 	const mariadbworkerResource = new SleepingComponentResource(
 		`mariadbworkerRes`,
-		{reconfState: mariadbmasterResWish.offer, timeCreate: 10.0, timeDelete: 3.0, depsOffers: [mariadbmasterResWish.offer]}
+		{reconfState: mariadbmasterResWish.offer, timeCreate: createTime["mariadbworker"], timeDelete: deleteTime["mariadbworker"], depsOffers: [mariadbmasterResWish.offer]}
 	)
 	
 	// Provide mariadbworker to nova and neutron
@@ -61,7 +61,7 @@ const program = async () => {
 	// Create component
 	const keystoneResource = new SleepingComponentResource(
 		`keystoneRes`,
-		{reconfState: mariadbworkerResource.reconfState, timeCreate: 10.0, timeDelete: 3.0, depsOffers: []},
+		{reconfState: mariadbworkerResource.reconfState, timeCreate: createTime["keystone"], timeDelete: deleteTime["keystone"], depsOffers: []},
 		{dependsOn: mariadbworkerResource}
 	)
 	
@@ -72,7 +72,7 @@ const program = async () => {
 	/* glance */
 	const glanceResource = new SleepingComponentResource(
 		`glanceRes`,
-		{reconfState: keystoneResource.reconfState, timeCreate: 10.0, timeDelete: 3.0, depsOffers: []},
+		{reconfState: keystoneResource.reconfState, timeCreate: createTime["glance"], timeDelete: deleteTime["glance"], depsOffers: []},
 		{dependsOn: [mariadbworkerResource, keystoneResource]}
 	)
 	

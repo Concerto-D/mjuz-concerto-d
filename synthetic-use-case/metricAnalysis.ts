@@ -57,10 +57,11 @@ export const initializeReconf = (assemblyType: string) => {
 	setExitCode(0);  // Set default exit code
 	
 	// Compute server deployment time
-	let installTime;
-	let runningTime;
+	const transitions_times = JSON.parse(fs.readFileSync(config_file_path, "utf-8"));
+	let createTime = computeOpenstackCreateTime(transitions_times["transitions_times"], assemblyName, scalingNum);
+	let deleteTime = computeOpenstackDeleteTime(transitions_times["transitions_times"], assemblyName, scalingNum);
 	let updateTime;
-	// if(assemblyName === "server") {
+	// if(assemblyName === "server") {  TODO: refacto parallel_deps
 	// 	installTime = computeServerInstallTime(config_file_path, nbScalingNodes);
 	// 	runningTime = computeServerRunningTime(config_file_path);
 	// 	updateTime = computeServerUpdateTime(config_file_path, nbScalingNodes);
@@ -84,8 +85,8 @@ export const initializeReconf = (assemblyType: string) => {
 		nbScalingNodes,
 		scalingNum,
 		inventory,
-		installTime,
-		runningTime,
+		createTime,
+		deleteTime,
 		updateTime,
 		logger
 	]
@@ -122,6 +123,71 @@ export const goToSleep = (newExitCode: number): void => {
 	setExitCode(newExitCode);
 	process.kill(process.pid, 3);
 };
+
+
+export const computeOpenstackCreateTime = (tt_ass: any, assemblyName: string, scalingNum: number): any => {
+	if (assemblyName === "mariadbmaster") {
+		return {"mariadbmaster": (tt_ass["mariadbmaster"]["configure0"] 
+								+ tt_ass["mariadbmaster"]["configure1"]
+								+ tt_ass["mariadbmaster"]["bootstrap"] 
+								+ tt_ass["mariadbmaster"]["start"] 
+								+ tt_ass["mariadbmaster"]["register"]
+								+  tt_ass["mariadbmaster"]["deploy"])
+		} 
+	}
+	else if (assemblyName.includes("worker")) {
+		return {
+			"mariadbworker": (tt_ass[`mariadbworker${scalingNum}`]["configure0"] 
+							+ tt_ass[`mariadbworker${scalingNum}`]["configure1"] 
+							+ tt_ass[`mariadbworker${scalingNum}`]["bootstrap"] 
+							+ tt_ass[`mariadbworker${scalingNum}`]["start"]
+							+ tt_ass[`mariadbworker${scalingNum}`]["register"]
+							+ tt_ass[`mariadbworker${scalingNum}`]["deploy"]),
+			"keystone": tt_ass[`keystone${scalingNum}`]["pull"] + tt_ass[`keystone${scalingNum}`]["deploy"],
+			"glance": tt_ass[`glance${scalingNum}`]["pull0"] + tt_ass[`glance${scalingNum}`]["pull1"] + tt_ass[`glance${scalingNum}`]["pull2"] + tt_ass[`glance${scalingNum}`]["deploy"]
+		}
+	}
+	else if (assemblyName.includes("nova")) {
+		return {"nova": (tt_ass[assemblyName]["pull0"] 
+				       + tt_ass[assemblyName]["pull1"] 
+				       + tt_ass[assemblyName]["pull2"]
+				       + tt_ass[assemblyName]["ready0"]
+				       + tt_ass[assemblyName]["ready1"]
+				       + tt_ass[assemblyName]["start"]
+				       + tt_ass[assemblyName]["deploy"]
+				       + tt_ass[assemblyName]["cell_setup"])
+		}
+	}
+	else if (assemblyName.includes("neutron")) {
+		return {"neutron": tt_ass[assemblyName]["pull0"] + tt_ass[assemblyName]["pull1"] + tt_ass[assemblyName]["pull2"] + tt_ass[assemblyName]["deploy"]}
+	}
+	else {
+		throw new Error(`Assembly name not found for transitions time create: ${assemblyName}`)
+	}
+}
+
+
+export const computeOpenstackDeleteTime = (tt_ass: any, assemblyName: string, scalingNum: number): any => {
+	if (assemblyName === "mariadbmaster") {
+		return {"mariadbmaster": tt_ass["mariadbmaster"]["interrupt"] + tt_ass["mariadbmaster"]["unconfigure"]} 
+	}
+	else if (assemblyName.includes("worker")) {
+		return {
+			"mariadbworker": tt_ass[`mariadbworker${scalingNum}`]["interrupt"] + tt_ass[`mariadbworker${scalingNum}`]["unconfigure"],
+			"keystone": tt_ass[`keystone${scalingNum}`]["turnoff"],
+			"glance": tt_ass[`glance${scalingNum}`]["turnoff"]
+		}
+	}
+	else if (assemblyName.includes("nova")) {
+		return {"nova": tt_ass[assemblyName]["interrupt"] + tt_ass[assemblyName]["unpull"]}
+	}
+	else if (assemblyName.includes("neutron")) {
+		return {"neutron": tt_ass[assemblyName]["turnoff"]}
+	}
+	else {
+		throw new Error(`Assembly name not found for transitions time delete: ${assemblyName}`)
+	}
+}
 
 
 export const computeServerInstallTime = (transitions_times_file: string, nb_deps_tot: number): number => {

@@ -17,8 +17,8 @@ const [
 	nbScalingNodes,
 	scalingNum,
 	inventory,
-	installTime,
-	runningTime,
+	createTime,
+	deleteTime,
 	updateTime,
 	logger
 ] = initializeReconf("nova")
@@ -43,7 +43,7 @@ const program = async () => {
 	// Create comp
 	const novaResource = new SleepingComponentResource(
 		`${compName}Res`,
-		{reconfState: keystoneResWish.offer, timeCreate: 15.0, timeDelete: 10.0, depsOffers: [mariadbworkerResWish.offer, keystoneResWish.offer]}
+		{reconfState: keystoneResWish.offer, timeCreate: createTime["nova"], timeDelete: deleteTime["nova"], depsOffers: [mariadbworkerResWish.offer, keystoneResWish.offer]}
 	)
 	
 	novaResource.id.apply(novaResourceId => {
