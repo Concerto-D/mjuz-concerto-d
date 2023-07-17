@@ -29,7 +29,7 @@ const program = () => __awaiter(void 0, void 0, void 0, function* () {
     }
     /* RemoteConnection with database */
     const [databaseHost, databasePort] = inventory["database"].split(":");
-    const databaseConnection = new resources_1.RemoteConnection(`database`, { port: Number.parseInt(databaseHost), host: databasePort });
+    const databaseConnection = new resources_1.RemoteConnection(`database`, { port: Number.parseInt(databasePort), host: databaseHost });
     /* system */
     // Resolve database Wish
     let databaseResWish = new resources_1.Wish(databaseConnection, `databaseProvide`);
@@ -39,8 +39,8 @@ const program = () => __awaiter(void 0, void 0, void 0, function* () {
     const offerList = [];
     for (let i = 0; i < nbScalingNodes; i++) {
         const [cpsHost, cpsPort] = inventory[`cps${i}`].split(":");
-        const cpsConnection = new resources_1.RemoteConnection(`cps${i}`, { port: Number.parseInt(cpsHost), host: cpsPort });
-        const offer = new resources_1.Offer(cpsConnection, `system${scalingNum}Provide`, systemResource);
+        const cpsConnection = new resources_1.RemoteConnection(`cps${i}`, { port: Number.parseInt(cpsPort), host: cpsHost });
+        const offer = new resources_1.Offer(cpsConnection, `system${i}Provide`, systemResource);
         offerList.push(offer);
     }
     systemResource.id.apply(systemResourceId => {

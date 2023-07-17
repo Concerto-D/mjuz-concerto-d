@@ -42,7 +42,7 @@ const program = async () => {
 	
 	/* RemoteConnection with database */
 	const [databaseHost, databasePort] = inventory["database"].split(":")
-	const databaseConnection = new RemoteConnection(`database`, { port: Number.parseInt(databaseHost), host: databasePort});
+	const databaseConnection = new RemoteConnection(`database`, { port: Number.parseInt(databasePort), host: databaseHost});
 	
 	/* system */
 	// Resolve database Wish
@@ -57,9 +57,9 @@ const program = async () => {
 	// Provide system to listeners
 	const offerList = [];
 	for(let i = 0; i < nbScalingNodes; i++) {
-		const [cpsHost, cpsPort] = inventory[`cps${i}`].split(":")
-		const cpsConnection = new RemoteConnection(`cps${i}`, { port: Number.parseInt(cpsHost), host: cpsPort});
-		const offer = new Offer(cpsConnection, `system${scalingNum}Provide`, systemResource)
+		const [cpsHost, cpsPort] = inventory[`cps${i}`].split(":");
+		const cpsConnection = new RemoteConnection(`cps${i}`, { port: Number.parseInt(cpsPort), host: cpsHost});
+		const offer = new Offer(cpsConnection, `system${i}Provide`, systemResource)
 		offerList.push(offer);
 	}
 	
