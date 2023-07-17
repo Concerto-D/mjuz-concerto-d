@@ -19,7 +19,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.computeDepUpdateTime = exports.computeDepInstallTime = exports.computeDepRunningTime = exports.computeServerRunningTime = exports.computeServerUpdateTime = exports.computeServerInstallTime = exports.computeOpenstackDeleteTime = exports.computeOpenstackCreateTime = exports.goToSleep = exports.initTimeLogDir = exports.initializeReconf = exports.getScriptParameters = void 0;
+exports.computeDepUpdateTime = exports.computeDepInstallTime = exports.computeDepRunningTime = exports.computeServerRunningTime = exports.computeServerUpdateTime = exports.computeServerInstallTime = exports.goToSleep = exports.initTimeLogDir = exports.initializeReconf = exports.getScriptParameters = void 0;
 const core_1 = require("@mjuz/core");
 const fs = __importStar(require("fs"));
 const YAML = __importStar(require("yaml"));
@@ -72,8 +72,6 @@ const initializeReconf = (assemblyType) => {
     core_1.setExitCode(0); // Set default exit code
     // Compute server deployment time
     const transitions_times = JSON.parse(fs.readFileSync(config_file_path, "utf-8"));
-    let createTime = exports.computeOpenstackCreateTime(transitions_times["transitions_times"], assemblyName, scalingNum);
-    let deleteTime = exports.computeOpenstackDeleteTime(transitions_times["transitions_times"], assemblyName, scalingNum);
     let updateTime;
     // if(assemblyName === "server") {  TODO: refacto parallel_deps
     // 	installTime = computeServerInstallTime(config_file_path, nbScalingNodes);
@@ -94,13 +92,11 @@ const initializeReconf = (assemblyType) => {
     logger.info(`${scalingNum}`);
     logger.info("------------");
     return [
+        transitions_times,
         targetDeployment,
         nbScalingNodes,
         scalingNum,
         inventory,
-        createTime,
-        deleteTime,
-        updateTime,
         logger
     ];
 };
@@ -135,68 +131,6 @@ const goToSleep = (newExitCode) => {
     process.kill(process.pid, 3);
 };
 exports.goToSleep = goToSleep;
-const computeOpenstackCreateTime = (tt_ass, assemblyName, scalingNum) => {
-    if (assemblyName === "mariadbmaster") {
-        return { "mariadbmaster": (tt_ass["mariadbmaster"]["configure0"]
-                + tt_ass["mariadbmaster"]["configure1"]
-                + tt_ass["mariadbmaster"]["bootstrap"]
-                + tt_ass["mariadbmaster"]["start"]
-                + tt_ass["mariadbmaster"]["register"]
-                + tt_ass["mariadbmaster"]["deploy"])
-        };
-    }
-    else if (assemblyName.includes("worker")) {
-        return {
-            "mariadbworker": (tt_ass[`mariadbworker${scalingNum}`]["configure0"]
-                + tt_ass[`mariadbworker${scalingNum}`]["configure1"]
-                + tt_ass[`mariadbworker${scalingNum}`]["bootstrap"]
-                + tt_ass[`mariadbworker${scalingNum}`]["start"]
-                + tt_ass[`mariadbworker${scalingNum}`]["register"]
-                + tt_ass[`mariadbworker${scalingNum}`]["deploy"]),
-            "keystone": tt_ass[`keystone${scalingNum}`]["pull"] + tt_ass[`keystone${scalingNum}`]["deploy"],
-            "glance": tt_ass[`glance${scalingNum}`]["pull0"] + tt_ass[`glance${scalingNum}`]["pull1"] + tt_ass[`glance${scalingNum}`]["pull2"] + tt_ass[`glance${scalingNum}`]["deploy"]
-        };
-    }
-    else if (assemblyName.includes("nova")) {
-        return { "nova": (tt_ass[assemblyName]["pull0"]
-                + tt_ass[assemblyName]["pull1"]
-                + tt_ass[assemblyName]["pull2"]
-                + tt_ass[assemblyName]["ready0"]
-                + tt_ass[assemblyName]["ready1"]
-                + tt_ass[assemblyName]["start"]
-                + tt_ass[assemblyName]["deploy"])
-        };
-    }
-    else if (assemblyName.includes("neutron")) {
-        return { "neutron": tt_ass[assemblyName]["pull0"] + tt_ass[assemblyName]["pull1"] + tt_ass[assemblyName]["pull2"] + tt_ass[assemblyName]["deploy"] };
-    }
-    else {
-        throw new Error(`Assembly name not found for transitions time create: ${assemblyName}`);
-    }
-};
-exports.computeOpenstackCreateTime = computeOpenstackCreateTime;
-const computeOpenstackDeleteTime = (tt_ass, assemblyName, scalingNum) => {
-    if (assemblyName === "mariadbmaster") {
-        return { "mariadbmaster": tt_ass["mariadbmaster"]["interrupt"] + tt_ass["mariadbmaster"]["unconfigure"] };
-    }
-    else if (assemblyName.includes("worker")) {
-        return {
-            "mariadbworker": tt_ass[`mariadbworker${scalingNum}`]["interrupt"] + tt_ass[`mariadbworker${scalingNum}`]["unconfigure"],
-            "keystone": tt_ass[`keystone${scalingNum}`]["turnoff"],
-            "glance": tt_ass[`glance${scalingNum}`]["turnoff"]
-        };
-    }
-    else if (assemblyName.includes("nova")) {
-        return { "nova": tt_ass[assemblyName]["interrupt"] + tt_ass[assemblyName]["unpull"] };
-    }
-    else if (assemblyName.includes("neutron")) {
-        return { "neutron": tt_ass[assemblyName]["turnoff"] };
-    }
-    else {
-        throw new Error(`Assembly name not found for transitions time delete: ${assemblyName}`);
-    }
-};
-exports.computeOpenstackDeleteTime = computeOpenstackDeleteTime;
 const computeServerInstallTime = (transitions_times_file, nb_deps_tot) => {
     const transitions_times = JSON.parse(fs.readFileSync(transitions_times_file, "utf-8"));
     const transitions_times_assembly = transitions_times["transitions_times"]["server"];

@@ -11,19 +11,24 @@ import {Offer, RemoteConnection, Wish} from '@mjuz/core/resources';
 import { Behavior } from '@funkia/hareactive';
 import {SleepingComponentResource} from "../../sleepingComponent";
 import {goToSleep, initializeReconf} from "../../metricAnalysis";
+import {computeOpenstackTimes} from "../computeTransitionsTimes";
 
 const [
+	transitions_times,
 	targetDeployment,
 	nbScalingNodes,
 	scalingNum,
 	inventory,
-	createTime,
-	deleteTime,
-	updateTime,
 	logger
 ] = initializeReconf("neutron")
 
 const compName = `neutron${scalingNum}`
+
+const [
+	createTime,
+	deleteTime
+] = computeOpenstackTimes(transitions_times, compName, scalingNum);
+
 const timestampType = targetDeployment === "deploy" ? TimestampType.DEPLOY : TimestampType.UPDATE
 let timestampRegistered = false;
 const program = async () => {

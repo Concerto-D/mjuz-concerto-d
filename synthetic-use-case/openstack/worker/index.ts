@@ -12,19 +12,24 @@ import { Behavior } from '@funkia/hareactive';
 import {SleepingComponentResource} from "../../sleepingComponent";
 import {goToSleep, initializeReconf} from "../../metricAnalysis";
 import * as pulumi from "@pulumi/pulumi"
+import {computeOpenstackTimes} from "../computeTransitionsTimes";
 
 const [
+	transitions_times,
 	targetDeployment,
 	nbScalingNodes,
 	scalingNum,
 	inventory,
-	createTime,
-	deleteTime,
-	updateTime,
 	logger
 ] = initializeReconf("worker")
 
 const compName = `worker${scalingNum}`;
+
+const [
+	createTime,
+	deleteTime
+] = computeOpenstackTimes(transitions_times, compName, scalingNum);
+
 const timestampType = targetDeployment === "deploy" ? TimestampType.DEPLOY : TimestampType.UPDATE
 let timestampRegistered = false;
 const program = async () => {

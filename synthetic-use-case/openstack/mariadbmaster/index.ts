@@ -11,19 +11,23 @@ import { Offer, RemoteConnection } from '@mjuz/core/resources';
 import { Behavior } from '@funkia/hareactive';
 import {SleepingComponentResource} from "../../sleepingComponent";
 import {goToSleep, initializeReconf} from "../../metricAnalysis";
+import {computeOpenstackTimes} from "../computeTransitionsTimes";
 
 const compName = "mariadbmaster";
 
 const [
+	transitions_times,
 	targetDeployment,
 	nbScalingNodes,
 	scalingNum,
 	inventory,
-	createTime,
-	deleteTime,
-	updateTime,
 	logger
 ] = initializeReconf(compName)
+
+const [
+	createTime,
+	deleteTime
+] = computeOpenstackTimes(transitions_times, compName, scalingNum);
 
 const timestampType = targetDeployment === "deploy" ? TimestampType.DEPLOY : TimestampType.UPDATE
 

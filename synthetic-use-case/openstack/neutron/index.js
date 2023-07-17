@@ -14,8 +14,10 @@ const resources_1 = require("@mjuz/core/resources");
 const hareactive_1 = require("@funkia/hareactive");
 const sleepingComponent_1 = require("../../sleepingComponent");
 const metricAnalysis_1 = require("../../metricAnalysis");
-const [targetDeployment, nbScalingNodes, scalingNum, inventory, createTime, deleteTime, updateTime, logger] = metricAnalysis_1.initializeReconf("neutron");
+const computeTransitionsTimes_1 = require("../computeTransitionsTimes");
+const [transitions_times, targetDeployment, nbScalingNodes, scalingNum, inventory, logger] = metricAnalysis_1.initializeReconf("neutron");
 const compName = `neutron${scalingNum}`;
+const [createTime, deleteTime] = computeTransitionsTimes_1.computeOpenstackTimes(transitions_times, compName, scalingNum);
 const timestampType = targetDeployment === "deploy" ? core_1.TimestampType.DEPLOY : core_1.TimestampType.UPDATE;
 let timestampRegistered = false;
 const program = () => __awaiter(void 0, void 0, void 0, function* () {
