@@ -26,6 +26,7 @@ const computeOpenstackCreateTime = (tt_ass: any, assemblyName: string, scalingNu
 				       + tt_ass[assemblyName]["pull2"]
 				       + tt_ass[assemblyName]["ready0"]
 				       + tt_ass[assemblyName]["ready1"]
+					   + tt_ass[assemblyName]["cell_setup"]
 				       + tt_ass[assemblyName]["start"]
 				       + tt_ass[assemblyName]["deploy"])
 		}
